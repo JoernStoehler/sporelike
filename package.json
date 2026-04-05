@@ -7,6 +7,8 @@
     "dev:worker": "cd worker && npm run dev",
     "build:frontend": "cd frontend && npm run build",
     "build": "npm run build:frontend",
-    "deploy:worker": "cd worker && npm run deploy"
+    "deploy:worker": "cd worker && npm run deploy",
+    "test:frontend": "cd frontend && npm test",
+    "test:e2e": "cd frontend && npx playwright test"
   }
 }
