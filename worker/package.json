@@ -1,0 +1,13 @@
+{
+  "name": "sporelike-worker",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "^4.80.0"
+  }
+}

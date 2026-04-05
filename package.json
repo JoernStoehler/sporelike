@@ -1,0 +1,12 @@
+{
+  "name": "sporelike",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:worker": "cd worker && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:frontend",
+    "deploy:worker": "cd worker && npm run deploy"
+  }
+}
