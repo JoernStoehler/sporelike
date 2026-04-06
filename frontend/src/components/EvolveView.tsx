@@ -141,8 +141,8 @@ export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOn
 
       {/* Advance button — shown only after active acceptance */}
       {accepted && !isReadOnly && (
-        <button className="btn btn-advance" onClick={onAdvanceEra}>
-          Advance to Next Era →
+        <button className="btn btn-advance" onClick={onAdvanceEra} disabled={advanceLoading}>
+          {advanceLoading ? 'Advancing...' : 'Advance to Next Era →'}
         </button>
       )}
     </div>
