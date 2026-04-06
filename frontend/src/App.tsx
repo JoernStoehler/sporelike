@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import { mockGameState } from './mockData'
+import { mockGameState, mockPlanets } from './mockData'
 import type { TabId } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
 import { BottomNav } from './components/BottomNav'
@@ -36,7 +36,7 @@ function App() {
       />
 
       <main className="main-content" onClick={() => showEraDropdown && setShowEraDropdown(false)}>
-        {activeTab === 'planet' && <PlanetView gameState={gameState} />}
+        {activeTab === 'planet' && <PlanetView gameState={gameState} planets={mockPlanets} />}
         {activeTab === 'ecosystem' && <EcosystemView era={currentEra} previousEra={previousEra} />}
         {activeTab === 'challenges' && <ChallengeView challenges={currentEra.challenges} onAllComplete={() => setActiveTab('evolve')} isReadOnly={isReadOnly} />}
         {activeTab === 'evolve' && <EvolveView era={currentEra} onAdvanceEra={handleAdvanceEra} isReadOnly={isReadOnly} nextEraPlayerSpecies={nextEraPlayerSpecies} />}

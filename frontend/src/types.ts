@@ -1,3 +1,14 @@
+// ---- Planet ----
+
+export interface Planet {
+  id: string;
+  name: string;
+  description: string;
+  eraCount: number;
+  speciesCount: number;
+  imagePrompt?: string;
+}
+
 // ---- Core game entities ----
 
 export interface Species {

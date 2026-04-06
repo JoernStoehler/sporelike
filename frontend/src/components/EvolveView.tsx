@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Era, Species } from '../types';
 import { SpeciesCard } from './SpeciesCard';
 
@@ -11,9 +11,17 @@ interface Props {
 
 export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlayerSpecies }: Props) {
   const playerSpecies = era.species.find(s => s.id === era.playerSpeciesId)!;
-  const [mutationText, setMutationText] = useState('');
-  const [preview, setPreview] = useState<{ species: Species; reasoning: string; variability: number } | null>(null);
-  const [accepted, setAccepted] = useState(false);
+  const [mutationText, setMutationText] = useState(
+    isReadOnly && nextEraPlayerSpecies ? `Evolved into ${nextEraPlayerSpecies.name}` : ''
+  );
+  const [preview, setPreview] = useState<{ species: Species; reasoning: string; variability: number } | null>(
+    isReadOnly && nextEraPlayerSpecies
+      ? { species: nextEraPlayerSpecies, reasoning: 'This mutation was accepted in a previous era', variability: 0 }
+      : null
+  );
+  const [accepted, setAccepted] = useState(isReadOnly);
+  const cardScrollRef = useRef<HTMLDivElement>(null);
+  const previewCardRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
     'Develop harder outer membrane',
@@ -24,7 +32,7 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
   function handlePreview() {
     if (!mutationText.trim()) return;
     // Mock preview — in real app this calls the AI
-    setPreview({
+    const newPreview = {
       species: {
         ...playerSpecies,
         id: playerSpecies.id + '-next',
@@ -35,52 +43,61 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
       },
       reasoning: `This mutation responds to current ecological pressures. ${mutationText} would allow the species to better compete for resources near the thermal vents while maintaining its existing adaptations.`,
       variability: 0.4,
-    });
+    };
+    setPreview(newPreview);
+    // Auto-scroll the card row to show the preview card
+    setTimeout(() => {
+      if (previewCardRef.current) {
+        previewCardRef.current.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      }
+    }, 50);
   }
 
   function handleAccept() {
     setAccepted(true);
   }
 
-  // Read-only past era: show current species on left, next form on right
-  if (isReadOnly) {
-    return (
-      <div className="view evolve-view">
-        <div className="evolve-cards">
-          <SpeciesCard species={playerSpecies} glowVariant="player" size="compact" />
-          {nextEraPlayerSpecies ? (
-            <SpeciesCard species={nextEraPlayerSpecies} glowVariant="new" changeLabel="NEXT FORM" size="compact" />
-          ) : (
-            <div className="card evolve-card-placeholder">
-              <span className="evolve-placeholder-text">No next form</span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Active evolve view
-  const rightCard = accepted && preview
-    ? <SpeciesCard species={preview.species} glowVariant="new" changeLabel="NEXT FORM" size="compact" />
-    : preview
-      ? <SpeciesCard species={preview.species} glowVariant="new" changeLabel="PREVIEW" size="compact" />
-      : (
-        <div className="card evolve-card-placeholder">
-          <span className="evolve-placeholder-text">? preview will appear here</span>
-        </div>
-      );
+  const previewCard = preview ? (
+    <div ref={previewCardRef}>
+      <SpeciesCard
+        species={preview.species}
+        glowVariant="new"
+        changeLabel={accepted ? 'NEXT FORM' : 'PREVIEW'}
+      />
+    </div>
+  ) : (
+    <div
+      ref={previewCardRef}
+      className="card"
+      style={{
+        minWidth: 200,
+        maxWidth: 240,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 120,
+        background: '#0f1628',
+        border: '1px dashed #2a3550',
+        borderRadius: 12,
+      }}
+    >
+      <span style={{ fontSize: 12, color: '#4a5570', textAlign: 'center', padding: 8 }}>
+        ? preview will appear here
+      </span>
+    </div>
+  );
 
   return (
     <div className="view evolve-view">
-      {/* Two-card row */}
-      <div className="evolve-cards">
-        <SpeciesCard species={playerSpecies} glowVariant="player" size="compact" />
-        {rightCard}
+      {/* Horizontal scrollable card row */}
+      <div className="card-scroll" ref={cardScrollRef}>
+        <SpeciesCard species={playerSpecies} glowVariant="player" />
+        {previewCard}
       </div>
 
-      {/* Input area — hidden after acceptance */}
-      {!accepted && (
+      {/* Input area — disabled in read-only, hidden after active acceptance */}
+      {(!accepted || isReadOnly) && (
         <div className="evolve-input-area">
           <div className="mutation-input">
             <input
@@ -88,13 +105,18 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
               placeholder="Describe a mutation..."
               value={mutationText}
               onChange={e => setMutationText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handlePreview()}
+              onKeyDown={e => e.key === 'Enter' && !isReadOnly && handlePreview()}
+              disabled={isReadOnly}
             />
-            <button className="btn btn-primary" onClick={handlePreview} disabled={!mutationText.trim()}>
+            <button
+              className="btn btn-primary"
+              onClick={handlePreview}
+              disabled={isReadOnly || !mutationText.trim()}
+            >
               Preview
             </button>
           </div>
-          <div className="suggestion-chips">
+          <div className="suggestion-chips" style={isReadOnly ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
             {suggestions.map(s => (
               <button key={s} className="chip" onClick={() => setMutationText(s)}>{s}</button>
             ))}
@@ -102,23 +124,31 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
         </div>
       )}
 
-      {/* Preview details — shown only when preview exists and not yet accepted */}
-      {preview && !accepted && (
+      {/* Preview details — shown when preview exists */}
+      {preview && (!accepted || isReadOnly) && (
         <div className="evolve-preview-details">
           <p className="reasoning-text reasoning-text-compact">{preview.reasoning}</p>
-          <div className="variability-bar variability-bar-compact">
-            <span className="variability-label">Variability</span>
-            <div className="variability-track">
-              <div className="variability-fill" style={{ width: `${preview.variability * 100}%` }} />
+          {preview.variability > 0 && (
+            <div className="variability-bar variability-bar-compact">
+              <span className="variability-label">Variability</span>
+              <div className="variability-track">
+                <div className="variability-fill" style={{ width: `${preview.variability * 100}%` }} />
+              </div>
+              <span className="variability-value">{(preview.variability * 100).toFixed(0)}%</span>
             </div>
-            <span className="variability-value">{(preview.variability * 100).toFixed(0)}%</span>
-          </div>
-          <button className="btn btn-primary btn-full" onClick={handleAccept}>Accept Mutation</button>
+          )}
+          <button
+            className="btn btn-primary btn-full"
+            onClick={handleAccept}
+            disabled={isReadOnly}
+          >
+            Accept Mutation
+          </button>
         </div>
       )}
 
-      {/* Advance button — shown only after acceptance */}
-      {accepted && (
+      {/* Advance button — shown only after active acceptance */}
+      {accepted && !isReadOnly && (
         <button className="btn btn-advance" onClick={onAdvanceEra}>
           Advance to Next Era →
         </button>

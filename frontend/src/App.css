@@ -55,6 +55,7 @@
   flex: 1;
   text-align: left;
   font-weight: 500;
+  font-size: 15px;
 }
 
 .dropdown-arrow {
@@ -122,7 +123,7 @@
 
 .nav-tab.active { color: #00e5ff; }
 .nav-icon { font-size: 20px; }
-.nav-label { font-weight: 500; }
+.nav-label { font-weight: 500; font-size: 11px; }
 
 /* ---- Views ---- */
 .view {
@@ -164,7 +165,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
@@ -231,13 +232,13 @@
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 6px;
 }
 
 .card-desc {
-  font-size: 12px;
+  font-size: 13px;
   color: #8892a8;
   line-height: 1.4;
   margin-top: 6px;
@@ -250,7 +251,7 @@
 }
 
 .trait-pill {
-  font-size: 10px;
+  font-size: 11px;
   padding: 2px 6px;
   border-radius: 8px;
   background: #1e2a45;
@@ -300,7 +301,7 @@
 
 /* ---- Section Title ---- */
 .section-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #8892a8;
   text-transform: uppercase;
@@ -325,7 +326,7 @@
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  font-size: 12px;
+  font-size: 13px;
   color: #a0b4d0;
   padding: 4px 0;
   line-height: 1.4;
@@ -337,19 +338,58 @@
 .planet-view {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding-top: 48px;
+  padding-top: 8px;
 }
 
-.planet-icon { font-size: 64px; margin-bottom: 16px; }
-.planet-name { font-size: 24px; font-weight: 700; }
-.planet-subtitle { color: #8892a8; font-size: 14px; margin-top: 4px; }
+.planet-stats--compact {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
 
 .planet-stats {
   display: flex;
   gap: 24px;
   margin: 32px 0;
+}
+
+.planet-hint {
+  font-size: 12px;
+  color: #4a5570;
+  margin-top: 8px;
+}
+
+/* ---- Planet Card Images ---- */
+.planet-card-image {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-card-image--aegis {
+  background: linear-gradient(135deg, #1a3a1a, #2a4a20, #3a2010);
+}
+
+.planet-card-image--borea {
+  background: linear-gradient(135deg, #0a1a3a, #102a4a, #c8e8ff22);
+}
+
+.planet-card-image--new {
+  background: #0f1628;
+}
+
+.planet-card--new {
+  border-style: dashed;
+  border-color: #2a3550;
+}
+
+/* ---- Planet Stat Line ---- */
+.planet-stat-line {
+  font-size: 11px;
+  color: #556080;
+  margin-top: 6px;
+  letter-spacing: 0.3px;
 }
 
 .stat {
@@ -397,7 +437,7 @@
 }
 
 .challenge-desc {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
   margin-bottom: 16px;
   color: #e0e6f0;
@@ -429,10 +469,10 @@
 .action-btn.chosen { border-color: #00e5ff; background: #0d2a3a; }
 .action-btn.dimmed { opacity: 0.4; }
 
-.action-label { font-weight: 500; }
+.action-label { font-weight: 500; font-size: 14px; }
 
 .action-outcome {
-  font-size: 12px;
+  font-size: 13px;
   color: #a0b4d0;
   line-height: 1.4;
   padding-top: 4px;
@@ -452,7 +492,7 @@
   border: 1px solid #253050;
   border-radius: 8px;
   color: #e0e6f0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .freeform-input input::placeholder { color: #556080; }
@@ -486,72 +526,9 @@
 }
 
 /* ---- Compact Card (size="compact") ---- */
-.card-compact .card-image {
-  height: 50px;
-}
-
-.card-compact .card-image .card-image-icon {
-  font-size: 22px;
-}
-
-.card-compact .card-body {
-  padding: 6px 8px 8px;
-}
-
-.card-compact .card-title {
-  font-size: 12px;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-compact .trait-pill {
-  font-size: 9px;
-  padding: 1px 5px;
-}
-
-.card-compact .card-desc {
-  font-size: 10px;
-  margin-top: 4px;
-  line-height: 1.3;
-}
-
-.card-compact .badge {
-  font-size: 8px;
-  padding: 1px 5px;
-  top: 5px;
-  right: 5px;
-}
+.card-compact {}
 
 /* ---- Evolve View ---- */
-.evolve-cards {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.evolve-cards > * {
-  flex: 1;
-  min-width: 0;
-}
-
-.evolve-card-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 120px;
-  background: #0f1628;
-  border: 1px dashed #2a3550;
-  border-radius: 12px;
-}
-
-.evolve-placeholder-text {
-  font-size: 11px;
-  color: #4a5570;
-  text-align: center;
-  padding: 8px;
-}
 
 .evolve-input-area {
   margin-bottom: 0;
@@ -562,12 +539,10 @@
 }
 
 .reasoning-text-compact {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   margin: 6px 0;
   padding: 8px 10px;
+  max-height: 80px;
+  overflow-y: auto;
 }
 
 .variability-bar-compact {
@@ -591,7 +566,7 @@
   border: 1px solid #253050;
   border-radius: 8px;
   color: #e0e6f0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .mutation-input input::placeholder { color: #556080; }
@@ -610,7 +585,7 @@
   border: 1px solid #253050;
   border-radius: 16px;
   color: #a0b4d0;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -629,6 +604,8 @@
   padding: 10px 12px;
   background: #141b2d;
   border-radius: 8px;
+  max-height: 80px;
+  overflow-y: auto;
 }
 
 .variability-bar {
@@ -688,7 +665,7 @@
   padding: 10px 16px;
   border-radius: 8px;
   border: none;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;

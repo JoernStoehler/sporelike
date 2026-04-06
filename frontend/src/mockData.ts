@@ -1,4 +1,4 @@
-import type { Era, GameState } from './types';
+import type { Era, GameState, Planet } from './types';
 
 const era1: Era = {
   number: 1,
@@ -224,6 +224,32 @@ const era2: Era = {
     { type: 'ecological', description: 'Nutrient levels spiked from Bloomdust decomposition, creating an enriched detritus web favoring omnivores and filter feeders.', speciesIds: [], featureIds: ['ft-nutrient-cycle'] },
   ],
 };
+
+export const mockPlanets: Planet[] = [
+  {
+    id: 'aegis-7',
+    name: 'Aegis-7',
+    description: 'A warm tide pool world with volcanic activity',
+    eraCount: 2,
+    speciesCount: 5,
+    imagePrompt: 'alien tide pool world with volcanic vents, warm orange glow, aerial view, sci-fi illustration',
+  },
+  {
+    id: 'borea-3',
+    name: 'Borea-3',
+    description: 'An ice-crusted ocean world with bioluminescent depths',
+    eraCount: 0,
+    speciesCount: 0,
+    imagePrompt: 'frozen alien ocean planet with cracked ice surface, blue bioluminescent glow beneath, sci-fi illustration',
+  },
+  {
+    id: 'new',
+    name: '???',
+    description: 'Seed a new world...',
+    eraCount: 0,
+    speciesCount: 0,
+  },
+];
 
 export const mockGameState: GameState = {
   currentEraIndex: 1,
