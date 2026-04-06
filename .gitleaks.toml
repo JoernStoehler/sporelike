@@ -1,0 +1,17 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+title = "sporelike gitleaks config"
+
+# Extend the built-in default ruleset rather than replacing it
+[extend]
+  useDefault = true
+
+[allowlist]
+  description = "Global allowlist"
+  # Ignore the config file itself and example env templates
+  paths = [
+    '''\.gitleaks\.toml''',
+    '''\.env\.example''',
+    '''\.env\.sample''',
+  ]
