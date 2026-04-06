@@ -7,11 +7,14 @@ Technical contract for agents working on this codebase. Read this before touchin
 ```
 sporelike/
 ├── frontend/          # Vite + React + TypeScript SPA
+│   ├── public/
+│   │   └── placeholders/  # Static placeholder images for species/features/planets
 │   └── src/
 │       ├── App.tsx            # Root component, tab routing, top-level state
 │       ├── App.css            # All styles (single file, no CSS modules)
 │       ├── types.ts           # Canonical type definitions (source of truth)
-│       ├── mockData.ts        # Mock game state (2 eras, used while backend is placeholder)
+│       ├── mockData.ts        # Mock game state (2 eras, used as seed data)
+│       ├── api.ts             # Fetch client — thin wrappers over the three worker endpoints
 │       ├── components/        # UI components (one per file)
 │       │   ├── TopBar.tsx
 │       │   ├── BottomNav.tsx
@@ -24,8 +27,12 @@ sporelike/
 │       └── prompts/           # AI prompt builders (pure functions, no fetch)
 │           ├── eraProgression.ts
 │           └── mutationPreview.ts
-├── worker/            # Cloudflare Worker (currently placeholder)
-│   ├── src/index.ts
+├── worker/            # Cloudflare Worker — three live AI endpoints
+│   ├── src/
+│   │   ├── index.ts   # HTTP handler + routing
+│   │   ├── gemini.ts  # Gemini API fetch wrapper + JSON parser
+│   │   ├── prompts.ts # Prompt builder functions (worker-side copy)
+│   │   └── types.ts   # Shared game types (self-contained, no frontend import)
 │   └── wrangler.toml
 └── package.json       # Root scripts only (delegates to sub-packages)
 ```
@@ -41,6 +48,7 @@ Key state variables in `App.tsx`:
 - `viewEraIndex: number` — which era the UI is showing (enables read-only time travel)
 - `activeTab: TabId` — which of the four views is visible
 - `showEraDropdown: boolean` — controls the era picker overlay
+- `advanceLoading: boolean` — true while era progression AI call is in flight
 
 **Component tree**:
 ```
@@ -58,18 +66,25 @@ App
 
 **Dev server**: `npm run dev:frontend` → `http://localhost:5173`
 
+In a devcontainer, run the worker with `--ip 0.0.0.0` so the Vite proxy can reach it:
+```
+wrangler dev --ip 0.0.0.0
+```
+
+**Vite proxy**: `vite.config.ts` proxies `/api/*` to `http://localhost:8787` during local development so the frontend talks to the local worker without CORS issues and without needing `VITE_API_URL`.
+
 **Build**: `npm run build:frontend` (tsc + vite build, output to `frontend/dist/`)
 
 **Tests**: `npm run test:frontend` (vitest), `npm run test:e2e` (playwright)
 
 ## Backend (Cloudflare Worker)
 
-**Current state**: Placeholder only. `worker/src/index.ts` returns `{ status: 'ok', message: 'Sporelike API - placeholder' }` for all requests.
+**Current state**: Three endpoints are fully implemented and call the Gemini 2.5 Flash Lite API.
 
-**Planned stack**:
-- **Cloudflare Workers** — HTTP handler, API key injection, request validation, rate limiting
-- **D1 (SQLite)** — persistent game state (eras, species, challenges)
-- **R2** — generated image storage (URLs stored in `Species.imageUrl`)
+**Stack**:
+- **Cloudflare Workers** — HTTP handler, API key injection, request validation, CORS
+- **D1 (SQLite)** — not yet configured (planned for persistent game state)
+- **R2** — not yet configured (planned for generated image storage)
 
 **wrangler.toml** (current):
 ```toml
@@ -80,69 +95,74 @@ compatibility_date = "2024-12-01"
 
 D1 and R2 bindings are not yet configured.
 
+**Worker secret**: `GEMINI_API_KEY` — set via `wrangler secret put GEMINI_API_KEY`. Never in wrangler.toml or the frontend bundle.
+
 **Dev**: `npm run dev:worker` (wrangler dev, default port 8787)
 
 **Deploy**: `npm run deploy:worker`
 
-## Planned API Contract
+**Live URL**: `https://sporelike-api.joern-ef1.workers.dev`
 
-All endpoints are JSON over HTTP. The worker injects API keys for Claude and fal.ai — the frontend never holds secrets.
+## API Contract
 
-### POST /api/era/progress
+All endpoints are JSON over HTTP (`Content-Type: application/json` required). The worker injects the Gemini API key — the frontend never holds secrets.
 
-Generates the next era. Expected to take 10–15 seconds. Input matches `EraProgressionInput` from `types.ts`.
+### GET /api/health
 
-```
-Request body: EraProgressionInput
-Response body: { newEra: Era }
-```
+Returns `{ status: 'ok' }`. Used for smoke-testing.
 
-### POST /api/mutation/preview
+### POST /api/mutation-preview
 
 Generates a mutation candidate for the player species. Expected to take 3–5 seconds.
 
 ```
-Request body: MutationPreviewInput
+Request body:  { currentEra: Era; playerSpecies: Species; requestedChange: string }
 Response body: MutationPreviewOutput  (species + reasoning + variabilityScore)
 ```
 
-### POST /api/challenge/freeform
+### POST /api/era-progression
+
+Generates the next era. Expected to take 10–15 seconds.
+
+```
+Request body:  EraProgressionInput
+Response body: { newEra: Era }
+```
+
+### POST /api/freeform-challenge
 
 Generates an outcome for a player-typed freeform challenge response. Expected to take 3–5 seconds.
 
 ```
-Request body: { challengeId: string; context: Era; freeformText: string }
+Request body:  { challenge: Challenge; freeformText: string; era: Era }
 Response body: { outcome: string; pointsAwarded: number }
 ```
 
-### GET /api/game/:planetId
+### GET /api/game/:planetId (planned)
 
-Fetches saved game state for a planet (planned, not implemented).
+Fetches saved game state for a planet. Not yet implemented.
 
-```
-Response body: GameState
-```
+### POST /api/game/:planetId (planned)
 
-### POST /api/game/:planetId
-
-Saves game state (planned, not implemented).
+Saves game state. Not yet implemented.
 
 ## AI Services
 
-### Claude Haiku (game logic)
+### Gemini 2.5 Flash Lite (game logic)
 
-Used for all three game logic calls. Prompts are pure TypeScript functions in `frontend/src/prompts/`:
+Used for all three game logic calls. The worker calls `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent` using plain `fetch` (no SDK). Implementation is in `worker/src/gemini.ts`.
 
-- `buildEraProgressionPrompt(input: EraProgressionInput): string` — the main "next era" call. Instructs Haiku to act as an ecologist/game designer, enforces ecological coherence rules, and specifies exact JSON output schema matching `Era`.
-- `buildMutationPrompt(input: MutationPreviewInput): string` — mutation preview. Builds on existing traits, addresses active pressures, returns mutated `Species` + `reasoning` + `variabilityScore`.
+Prompt builders live in `worker/src/prompts.ts` (worker-side) and in `frontend/src/prompts/` (frontend-side legacy copies). They may diverge over time; the worker versions are authoritative.
 
-Both prompts end with "Respond with valid JSON only, no prose outside the JSON" and include the full expected schema in the prompt.
+- `buildMutationPrompt(input: MutationPreviewInput): string` — builds on existing traits, addresses active pressures, returns mutated `Species` + `reasoning` + `variabilityScore`.
+- `buildEraProgressionPrompt(input: EraProgressionInput): string` — instructs the model to act as an ecologist/game designer, enforces ecological coherence rules, specifies exact JSON output schema matching `Era`.
+- `buildFreeformChallengePrompt(challenge, freeformText, era): string` — evaluates a freeform player action and returns an outcome + points awarded.
 
-A third prompt (freeform challenge response) is not yet implemented in code but is specified in `types.ts` via the `Challenge` interface.
+All prompts end with "Respond with valid JSON only, no prose outside the JSON." `parseJsonResponse` in `gemini.ts` strips optional markdown code fences before parsing.
 
-### Flux Schnell via fal.ai
+### Flux Schnell via fal.ai (planned)
 
-Image generation for species and features. ~$0.005/image, <2 seconds, supports img2img. Each `Species` and `Feature` carries an `imagePrompt: string` field used as the txt2img prompt. Generated image URLs are stored in `imageUrl?: string` (hosted in R2). Images are generated asynchronously; placeholder icons are shown until ready.
+Image generation for species and features. Not yet integrated. Each `Species` and `Feature` carries an `imagePrompt: string` field for future use. Generated image URLs would be stored in `imageUrl?: string` (to be hosted in R2). Static placeholder images are served from `frontend/public/placeholders/`.
 
 Generation cadence is a tunable decision (every era vs. every N eras). See `game-design.md`.
 
@@ -152,14 +172,14 @@ Generation cadence is a tunable decision (every era vs. every N eras). See `game
 
 ```
 Player completes challenges (ChallengeView)
+    → real freeform actions: POST /api/freeform-challenge (~3-5s)
     → navigates to Evolve tab
-    → types mutation request → POST /api/mutation/preview → preview shown
+    → types mutation request → POST /api/mutation-preview (~3-5s) → preview shown
     → accepts mutation
     → clicks "Advance to Next Era"
-        → POST /api/era/progress (10-15s loading state)
+        → POST /api/era-progression (~10-15s, advanceLoading spinner)
         → response: new Era appended to gameState.eras
         → currentEraIndex incremented
-        → async: POST images for new species to fal.ai → stored in R2 → Species.imageUrl updated
 ```
 
 ### State shape summary
@@ -175,7 +195,7 @@ See `frontend/src/types.ts` for all TypeScript definitions. Key relationships:
 
 ## Type Definitions Summary
 
-All canonical types are in `frontend/src/types.ts`. Do not duplicate them. Key interfaces:
+All canonical types are in `frontend/src/types.ts`. The worker maintains a self-contained copy in `worker/src/types.ts` — do not import across packages. Key interfaces:
 
 | Type | Purpose |
 |---|---|
@@ -191,10 +211,11 @@ All canonical types are in `frontend/src/types.ts`. Do not duplicate them. Key i
 | `EraSummary` | Compressed past-era summary (tokens-efficient) |
 | `MutationPreviewInput` | Payload for the mutation preview AI call |
 | `MutationPreviewOutput` | Result of mutation preview: species + reasoning + variabilityScore |
+| `FreeformChallengeOutput` | Result of freeform challenge: outcome + pointsAwarded |
 
 ## Deployment
 
-- **Frontend**: Cloudflare Pages, serving `frontend/dist/`. Domain: joernstoehler.com (already on Cloudflare).
-- **Worker**: Cloudflare Workers, name `sporelike-api`. Deployed via `wrangler deploy`.
+- **Frontend**: Cloudflare Pages, serving `frontend/dist/`. Live URL: `https://sporelike.pages.dev`
+- **Worker**: Cloudflare Workers, name `sporelike-api`. Deployed via `wrangler deploy`. Live URL: `https://sporelike-api.joern-ef1.workers.dev`
 - **No SSR**. The SPA is fully static; all dynamic behavior goes through the Worker API.
-- **Environment variables**: API keys for Claude (Anthropic) and fal.ai are set as Worker secrets via `wrangler secret put`, never in the frontend bundle.
+- **Secrets**: `GEMINI_API_KEY` is set as a Worker secret via `wrangler secret put`, never in the frontend bundle.

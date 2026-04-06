@@ -9,7 +9,7 @@ A turn-based evolution game where the player guides a species through an evolvin
 - **Unlike Spore**: player creativity has mechanical consequences. A mutation you choose changes what challenges appear next. The world reacts.
 - **Unlike AI Dungeon**: generation is constrained by ecological rules. The LLM is playing the role of an ecologist, not an improv partner. Surprises should be retrospectively logical, not random.
 
-The novel ingredient is using LLM reasoning (Claude Haiku) as the game engine. Instead of a numerical simulation, a fast model reasons about ecology in natural language. This lets the game model things that are hard to encode numerically — niche-filling, arms races, cascading extinctions — while remaining coherent enough to be a game rather than a story.
+The novel ingredient is using LLM reasoning (Gemini 2.5 Flash Lite) as the game engine. Instead of a numerical simulation, a fast model reasons about ecology in natural language. This lets the game model things that are hard to encode numerically — niche-filling, arms races, cascading extinctions — while remaining coherent enough to be a game rather than a story.
 
 ## Core Loop
 
@@ -47,7 +47,7 @@ The Achiever wants to make smart choices. The challenge system rewards pattern r
 
 ### Constrained Emergence
 
-The core prompt design principle: surprises must be retrospectively logical. The era progression prompt instructs Haiku to act as an "ecologist and game designer" and explicitly states: "Ecosystems have discoverable internal logic: changes should be surprising but retrospectively make sense."
+The core prompt design principle: surprises must be retrospectively logical. The era progression prompt instructs Gemini to act as an "ecologist and game designer" and explicitly states: "Ecosystems have discoverable internal logic: changes should be surprising but retrospectively make sense."
 
 The constraints that produce coherence:
 1. New species fill niches opened or closed by what changed — no species appears from nowhere
@@ -128,18 +128,18 @@ The freeform option lets players try things the game designer didn't anticipate.
 
 When the player types a custom action:
 - Input: challenge context + player's text
-- Output: outcome text + points awarded
-- Latency: ~3–5s (fast call)
-- The outcome should take the player's intent seriously and find an ecologically plausible result
+- Output: outcome text + points awarded (0–10 scale)
+- Latency: ~3–5s (fast call to `/api/freeform-challenge`)
+- The outcome takes the player's intent seriously and finds an ecologically plausible result; scoring rewards creativity and ecological soundness
 
-The question for playtesting: is freeform fun enough to justify the latency and AI call cost? If players mostly use the pre-generated options, freeform may be cut from MVP or deferred.
+This is fully implemented. The question for playtesting: is freeform fun enough to justify the latency and AI call cost? If players mostly use the pre-generated options, freeform may be cut from MVP or deferred.
 
 ## Evolution System
 
 ### Mutation Preview Flow
 
 1. Player types a freeform mutation request ("Develop a harder shell to resist the Dartfins")
-2. Hits "Preview" → POST /api/mutation/preview → ~3-5s
+2. Hits "Preview" → POST /api/mutation-preview → ~3-5s
 3. Result shows: mutated species card, reasoning paragraph, variability score bar
 4. Player can accept, or type a new request and preview again
 5. Multiple previews are supported (candidates tracked in `GameState.mutationCandidates`)

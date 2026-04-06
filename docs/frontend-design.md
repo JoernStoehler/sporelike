@@ -45,6 +45,8 @@ Stats bar across the top: three `stat` blocks showing eras played, species alive
 
 Below: a horizontal card scroll ("Your Worlds") showing planet cards. Currently two seeded planets (Aegis-7 and Borea-3) plus a "???" new-planet slot. The active planet (hardcoded `aegis-7`) uses `player-card` styling (cyan glow). The new-planet card uses a `+` icon and different gradient.
 
+Planet cards render `<img>` when `planet.imageUrl` is set; otherwise show the 🪐 icon. Placeholder images for the seeded planets are served from `frontend/public/placeholders/`.
+
 Bottom hint text: "Tap a planet to switch worlds" (tapping is not yet wired up — placeholder).
 
 ### Ecosystem View (`EcosystemView.tsx`)
@@ -80,8 +82,10 @@ Each challenge card shows:
 **Interaction states**:
 - No choice yet: all action buttons are enabled; freeform input is visible
 - Choice made (action): chosen button gains `.chosen` class (shows outcome text beneath label); other buttons gain `.dimmed` class; freeform input disappears
-- Choice made (freeform): action buttons dimmed; a `.freeform-result` block shows the typed text and a placeholder AI response
+- Choice made (freeform): action buttons dimmed; a `.freeform-result` block shows the typed text and the AI-generated outcome
 - `isReadOnly`: all buttons `disabled`, freeform hidden; previous choices pre-loaded from `challenge.playerChoice`
+
+**Freeform AI call**: submitting the freeform input calls `fetchFreeformChallenge` (`POST /api/freeform-challenge`). `freeformLoading` state shows `"..."` on the Go button and disables the input while the call is in flight. Errors surface as `.error-text` beneath the input.
 
 Nav buttons at bottom: `← Prev` / `Next →` step through challenges. When on the last challenge and all are complete, `Next →` becomes `"Ready to Evolve →"` which switches the active tab to `evolve`.
 
@@ -97,6 +101,8 @@ Horizontal card scroll at top shows:
 - Text input: "Describe a mutation..." + `Preview` button (also triggers on Enter)
 - Suggestion chips: three hardcoded quick-fills (`'Develop harder outer membrane'`, `'Improve sensory detection'`, `'Become more aggressive'`) — in production these will be dynamically generated based on current pressures
 
+**Preview flow**: clicking Preview calls `fetchMutationPreview` (`POST /api/mutation-preview`). `previewLoading` state changes the button label to `"Generating..."` and disables it while the call is in flight. Errors surface as `.error-text`. On success the preview card is populated and auto-scrolled into view.
+
 **Preview details** (shown when preview exists and not yet accepted):
 - Reasoning text paragraph
 - Variability bar (0–100% fill, only shown when `variability > 0`)
@@ -104,7 +110,7 @@ Horizontal card scroll at top shows:
 
 **After acceptance** (active era only):
 - Input area and preview details disappear
-- `"Advance to Next Era →"` button appears (`.btn-advance`)
+- `"Advance to Next Era →"` button appears (`.btn-advance`); `advanceLoading` prop changes its label to `"Advancing..."` while the era progression call runs
 
 **Read-only mode**: input disabled, suggestion chips have `.disabled` class, all buttons disabled; if `nextEraPlayerSpecies` is passed in, the mutation text pre-fills with `"Evolved into [name]"` and the preview shows the next-era species.
 
@@ -148,11 +154,9 @@ Glow variants and their CSS classes:
 - `extinct` → `.extinct-card` (red border + shadow, 0.85 opacity), image greyscale + skull overlay, card body 0.65 opacity
 - `none` → base `.card` only
 
-Image placeholder background:
+Image display: when `species.imageUrl` is set, an `<img>` element is rendered. Otherwise a placeholder background gradient and icon are shown:
 - Player: `linear-gradient(135deg, #0a3d2a, #0d4f4f)` with 🧬 icon
 - Others: `linear-gradient(135deg, #1a1a3e, #2d1b4e)` with 🦠 icon
-
-Image generation (via Flux Schnell) is not yet wired up; `imageUrl` on `Species` is used when present but no loading/display code is implemented yet.
 
 ### FeatureCard
 
@@ -163,7 +167,7 @@ Glow variants:
 - `removed` → `.extinct-card`, badge text `'REMOVED'`
 - `none` → base `.card`
 
-Icon: 🪨 for geological, 🌊 for ecological. Image area uses a dark green gradient (`#101a10` → `#1a2238`).
+Image display: when `feature.imageUrl` is set, an `<img>` element is rendered. Otherwise the type icon is shown: 🪨 for geological, 🌊 for ecological, with a dark green gradient background.
 
 Feature cards are narrower than species cards (`min-width: 180px` vs `200px`).
 
@@ -177,7 +181,7 @@ EvolveView scrolls to bring the preview card into view after generating a mutati
 
 **Action buttons** (`.action-btn`): large tap targets in ChallengeView. Disabled after a choice is made via React state (not the `disabled` attribute when in read-only mode — it uses the prop).
 
-**Freeform input**: standard `<input type="text">` that also submits on Enter. Present in both ChallengeView (challenge response) and EvolveView (mutation request).
+**Freeform input**: standard `<input type="text">` that also submits on Enter. Present in both ChallengeView (challenge response, calls `/api/freeform-challenge`) and EvolveView (mutation request, calls `/api/mutation-preview`).
 
 **Suggestion chips** (`.chip`): small pill buttons in EvolveView that fill the mutation text input on tap. Currently hardcoded.
 
@@ -199,16 +203,15 @@ EvolveView scrolls to bring the preview card into view after generating a mutati
 - Full visual shell with all four views
 - Era time travel (read-only viewing of past eras)
 - Diff-aware card rendering (new / adapted / extinct badges)
-- Challenge flow with action selection, freeform input (placeholder AI response)
-- Mutation preview flow (mock AI response: appends mutation text to description, adds a trait tag)
-- Accept mutation + advance era (fires `alert()` placeholder)
+- Challenge flow with action selection and freeform input (calls real AI via `/api/freeform-challenge`)
+- Mutation preview flow (calls real AI via `/api/mutation-preview`; shows reasoning + variability bar)
+- Accept mutation + advance era (calls real AI via `/api/era-progression` with `advanceLoading` spinner)
 - Planet view with stats and planet cards
+- Image display: SpeciesCard, FeatureCard, and PlanetView all render `<img>` when `imageUrl` is set; static placeholder images in `frontend/public/placeholders/` are used in mock data
 
 **Not yet implemented**:
-- Real AI calls (all three prompts are built but no fetch logic exists)
-- Image display (imageUrl field exists on Species/Feature, no `<img>` rendering)
+- Automated image generation via fal.ai (imagePrompt fields are populated by the AI but no image generation call is made)
 - Planet switching / new game creation
 - Persisted state (all state is in-memory, seeded from mockData)
-- Era transition loading state / flavor text
 - Dynamic mutation suggestion chips
 - Color scheme evolution per era
