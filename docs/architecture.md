@@ -15,18 +15,15 @@ sporelike/
 │       ├── types.ts           # Canonical type definitions (source of truth)
 │       ├── mockData.ts        # Mock game state (2 eras, used as seed data)
 │       ├── api.ts             # Fetch client — thin wrappers over the three worker endpoints
-│       ├── components/        # UI components (one per file)
-│       │   ├── TopBar.tsx
-│       │   ├── BottomNav.tsx
-│       │   ├── PlanetView.tsx
-│       │   ├── EcosystemView.tsx
-│       │   ├── ChallengeView.tsx
-│       │   ├── EvolveView.tsx
-│       │   ├── SpeciesCard.tsx
-│       │   └── FeatureCard.tsx
-│       └── prompts/           # AI prompt builders (pure functions, no fetch)
-│           ├── eraProgression.ts
-│           └── mutationPreview.ts
+│       └── components/        # UI components (one per file)
+│           ├── TopBar.tsx
+│           ├── BottomNav.tsx
+│           ├── PlanetView.tsx
+│           ├── EcosystemView.tsx
+│           ├── ChallengeView.tsx
+│           ├── EvolveView.tsx
+│           ├── SpeciesCard.tsx
+│           └── FeatureCard.tsx
 ├── worker/            # Cloudflare Worker — three live AI endpoints
 │   ├── src/
 │   │   ├── index.ts   # HTTP handler + routing
@@ -152,7 +149,7 @@ Saves game state. Not yet implemented.
 
 Used for all three game logic calls. The worker calls `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent` using plain `fetch` (no SDK). Implementation is in `worker/src/gemini.ts`.
 
-Prompt builders live in `worker/src/prompts.ts` (worker-side) and in `frontend/src/prompts/` (frontend-side legacy copies). They may diverge over time; the worker versions are authoritative.
+Prompt builders live in `worker/src/prompts.ts` (worker-side only). The frontend has no prompt logic — all AI calls go through the worker.
 
 - `buildMutationPrompt(input: MutationPreviewInput): string` — builds on existing traits, addresses active pressures, returns mutated `Species` + `reasoning` + `variabilityScore`.
 - `buildEraProgressionPrompt(input: EraProgressionInput): string` — instructs the model to act as an ecologist/game designer, enforces ecological coherence rules, specifies exact JSON output schema matching `Era`.

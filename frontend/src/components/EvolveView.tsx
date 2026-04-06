@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState } from 'react'; // useState kept for previewLoading/previewError
 import type { Era, Species } from '../types';
 import { SpeciesCard } from './SpeciesCard';
 import { fetchMutationPreview } from '../api';
@@ -6,22 +6,23 @@ import { fetchMutationPreview } from '../api';
 interface Props {
   era: Era;
   onAdvanceEra: () => void;
+  onMutationAccepted: (species: Species) => void;
   advanceLoading?: boolean;
   isReadOnly?: boolean;
   nextEraPlayerSpecies?: Species;
+  mutationText: string;
+  setMutationText: (text: string) => void;
+  evolvePreview: { species: Species; reasoning: string; variability: number } | null;
+  setEvolvePreview: (preview: { species: Species; reasoning: string; variability: number } | null) => void;
+  mutationAccepted: boolean;
 }
 
-export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOnly = false, nextEraPlayerSpecies }: Props) {
+export function EvolveView({ era, onAdvanceEra, onMutationAccepted, advanceLoading = false, isReadOnly = false, nextEraPlayerSpecies, mutationText, setMutationText, evolvePreview, setEvolvePreview, mutationAccepted }: Props) {
   const playerSpecies = era.species.find(s => s.id === era.playerSpeciesId)!;
-  const [mutationText, setMutationText] = useState(
-    isReadOnly && nextEraPlayerSpecies ? `Evolved into ${nextEraPlayerSpecies.name}` : ''
-  );
-  const [preview, setPreview] = useState<{ species: Species; reasoning: string; variability: number } | null>(
-    isReadOnly && nextEraPlayerSpecies
-      ? { species: nextEraPlayerSpecies, reasoning: 'This mutation was accepted in a previous era', variability: 0 }
-      : null
-  );
-  const [accepted, setAccepted] = useState(isReadOnly);
+  const preview = isReadOnly && nextEraPlayerSpecies && !evolvePreview
+    ? { species: nextEraPlayerSpecies, reasoning: 'This mutation was accepted in a previous era', variability: 0 }
+    : evolvePreview;
+  const accepted = isReadOnly || mutationAccepted;
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const previewCardRef = useRef<HTMLDivElement>(null);
@@ -42,7 +43,7 @@ export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOn
         playerSpecies,
         requestedChange: mutationText,
       });
-      setPreview({
+      setEvolvePreview({
         species: result.species,
         reasoning: result.reasoning,
         variability: result.variabilityScore,
@@ -61,7 +62,9 @@ export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOn
   }
 
   function handleAccept() {
-    setAccepted(true);
+    if (preview) {
+      onMutationAccepted(preview.species);
+    }
   }
 
   const previewCard = preview ? (
@@ -93,7 +96,7 @@ export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOn
             <input
               type="text"
               placeholder="Describe a mutation..."
-              value={mutationText}
+              value={isReadOnly && nextEraPlayerSpecies ? `Evolved into ${nextEraPlayerSpecies.name}` : mutationText}
               onChange={e => setMutationText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !isReadOnly && handlePreview()}
               disabled={isReadOnly}

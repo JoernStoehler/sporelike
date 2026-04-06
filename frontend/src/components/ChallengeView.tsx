@@ -6,35 +6,29 @@ interface Props {
   challenges: Challenge[];
   currentEra: Era;
   onAllComplete: () => void;
+  onChoiceMade: (challengeId: string, choice: number | 'freeform', freeformText?: string, outcome?: string) => void;
+  freeformOutcomes: Record<string, string>;
+  challengeIndex: number;
+  setChallengeIndex: (index: number) => void;
   isReadOnly?: boolean;
 }
 
-export function ChallengeView({ challenges, currentEra, onAllComplete, isReadOnly = false }: Props) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [choices, setChoices] = useState<Map<string, { choice: number | 'freeform'; text?: string }>>(() => {
-    if (isReadOnly) {
-      const map = new Map<string, { choice: number | 'freeform'; text?: string }>();
-      for (const challenge of challenges) {
-        if (challenge.playerChoice !== undefined) {
-          map.set(challenge.id, { choice: challenge.playerChoice });
-        }
-      }
-      return map;
-    }
-    return new Map();
-  });
+export function ChallengeView({ challenges, currentEra, onAllComplete, onChoiceMade, freeformOutcomes, challengeIndex, setChallengeIndex, isReadOnly = false }: Props) {
   const [freeformText, setFreeformText] = useState('');
   const [freeformLoading, setFreeformLoading] = useState(false);
   const [freeformError, setFreeformError] = useState<string | null>(null);
-  const [freeformOutcomes, setFreeformOutcomes] = useState<Map<string, string>>(new Map());
 
-  const challenge = challenges[currentIndex];
-  const chosen = choices.get(challenge?.id);
-  const allDone = choices.size === challenges.length;
+  const challenge = challenges[challengeIndex];
+  const chosen = challenge
+    ? challenge.playerChoice !== undefined
+      ? { choice: challenge.playerChoice, text: challenge.playerFreeformText }
+      : undefined
+    : undefined;
+  const allDone = challenges.every(c => c.playerChoice !== undefined);
 
   function pickAction(actionIndex: number) {
     if (chosen || isReadOnly) return;
-    setChoices(new Map(choices).set(challenge.id, { choice: actionIndex }));
+    onChoiceMade(challenge.id, actionIndex, undefined, challenge.actions[actionIndex].outcome);
   }
 
   async function submitFreeform() {
@@ -48,9 +42,8 @@ export function ChallengeView({ challenges, currentEra, onAllComplete, isReadOnl
         freeformText: submittedText,
         era: currentEra,
       });
-      setFreeformOutcomes(new Map(freeformOutcomes).set(challenge.id, result.outcome));
-      setChoices(new Map(choices).set(challenge.id, { choice: 'freeform', text: submittedText }));
       setFreeformText('');
+      onChoiceMade(challenge.id, 'freeform', submittedText, result.outcome);
     } catch (err) {
       setFreeformError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -59,14 +52,14 @@ export function ChallengeView({ challenges, currentEra, onAllComplete, isReadOnl
   }
 
   function next() {
-    if (currentIndex < challenges.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    if (challengeIndex < challenges.length - 1) {
+      setChallengeIndex(challengeIndex + 1);
     }
   }
 
   function prev() {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+    if (challengeIndex > 0) {
+      setChallengeIndex(challengeIndex - 1);
     }
   }
 
@@ -76,7 +69,7 @@ export function ChallengeView({ challenges, currentEra, onAllComplete, isReadOnl
     <div className="view challenge-view">
       <div className="challenge-progress">
         {challenges.map((_, i) => (
-          <span key={i} className={`progress-dot ${i === currentIndex ? 'current' : ''} ${choices.has(challenges[i].id) ? 'done' : ''}`} />
+          <span key={i} className={`progress-dot ${i === challengeIndex ? 'current' : ''} ${challenges[i].playerChoice !== undefined ? 'done' : ''}`} />
         ))}
       </div>
 
@@ -122,15 +115,15 @@ export function ChallengeView({ challenges, currentEra, onAllComplete, isReadOnl
         {chosen?.choice === 'freeform' && (
           <div className="freeform-result">
             <p className="freeform-action">You: "{chosen.text}"</p>
-            <p className="action-outcome">{freeformOutcomes.get(challenge.id) ?? challenge.playerOutcome ?? 'The ecosystem responds...'}</p>
+            <p className="action-outcome">{freeformOutcomes[challenge.id] ?? challenge.playerOutcome ?? 'The ecosystem responds...'}</p>
           </div>
         )}
       </div>
 
       <div className="challenge-nav">
-        <button className="btn btn-small" onClick={prev} disabled={currentIndex === 0}>← Prev</button>
-        <span className="challenge-counter">{currentIndex + 1} / {challenges.length}</span>
-        {currentIndex < challenges.length - 1 ? (
+        <button className="btn btn-small" onClick={prev} disabled={challengeIndex === 0}>← Prev</button>
+        <span className="challenge-counter">{challengeIndex + 1} / {challenges.length}</span>
+        {challengeIndex < challenges.length - 1 ? (
           <button className="btn btn-small" onClick={next}>Next →</button>
         ) : isReadOnly ? null : allDone ? (
           <button className="btn btn-primary" onClick={onAllComplete}>Ready to Evolve →</button>
