@@ -7,6 +7,13 @@ title = "sporelike gitleaks config"
 [extend]
   useDefault = true
 
+# Custom rules for keys not covered by defaults
+[[rules]]
+  id = "fal-ai-key"
+  description = "fal.ai API key"
+  regex = '''[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{32}'''
+  tags = ["key", "fal"]
+
 [allowlist]
   description = "Global allowlist"
   # Ignore the config file itself and example env templates
