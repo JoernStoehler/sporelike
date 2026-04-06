@@ -31,3 +31,4 @@ dist-ssr
 screenshots/
 worker/.wrangler/
 .Trash-1000/
+worker/.dev.vars
