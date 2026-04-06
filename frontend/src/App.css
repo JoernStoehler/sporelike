@@ -263,6 +263,14 @@
   color: #00e5ff;
 }
 
+.extinct-card .card-body {
+  opacity: 0.65;
+}
+
+.extinct-card .trait-pill {
+  opacity: 0.55;
+}
+
 /* ---- Card Scroll ---- */
 .card-scroll {
   display: flex;
@@ -294,11 +302,6 @@
   font-size: 13px;
 }
 
-/* Extinct trait pills — opacity handled inline; keep rule for any legacy references */
-.trait-pill-extinct {
-  opacity: 0.55;
-}
-
 /* ---- Section Title ---- */
 .section-title {
   font-size: 14px;
@@ -313,27 +316,6 @@
   margin-top: 0;
 }
 
-/* ---- Events Banner ---- */
-.events-banner {
-  background: #141b2d;
-  border: 1px solid #1e2a45;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
-}
-
-.event-item {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  font-size: 13px;
-  color: #a0b4d0;
-  padding: 4px 0;
-  line-height: 1.4;
-}
-
-.event-icon { flex-shrink: 0; }
-
 /* ---- Planet View ---- */
 .planet-view {
   display: flex;
@@ -341,16 +323,10 @@
   padding-top: 8px;
 }
 
-.planet-stats--compact {
-  display: flex;
-  gap: 24px;
-  margin-bottom: 16px;
-}
-
 .planet-stats {
   display: flex;
   gap: 24px;
-  margin: 32px 0;
+  margin-bottom: 16px;
 }
 
 .planet-hint {
@@ -525,28 +501,10 @@
   color: #8892a8;
 }
 
-/* ---- Compact Card (size="compact") ---- */
-.card-compact {}
-
 /* ---- Evolve View ---- */
-
-.evolve-input-area {
-  margin-bottom: 0;
-}
 
 .evolve-preview-details {
   margin-top: 8px;
-}
-
-.reasoning-text-compact {
-  margin: 6px 0;
-  padding: 8px 10px;
-  max-height: 80px;
-  overflow-y: auto;
-}
-
-.variability-bar-compact {
-  margin: 6px 0 8px;
 }
 
 .btn-full {
@@ -572,6 +530,11 @@
 .mutation-input input::placeholder { color: #556080; }
 .mutation-input input:focus { outline: none; border-color: #00e5ff66; }
 
+.suggestion-chips.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .suggestion-chips {
   display: flex;
   flex-wrap: wrap;
@@ -591,10 +554,6 @@
 }
 
 .chip:hover { border-color: #00e5ff66; color: #00e5ff; }
-
-.preview-section {
-  margin-top: 16px;
-}
 
 .reasoning-text {
   font-size: 12px;
@@ -643,21 +602,24 @@
   text-align: right;
 }
 
-.preview-actions {
+.evolve-placeholder-card {
+  min-width: 200px;
+  max-width: 240px;
+  flex-shrink: 0;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  background: #0f1628;
+  border: 1px dashed #2a3550;
+  border-radius: 12px;
 }
 
-.accepted-section {
-  margin-top: 16px;
+.evolve-placeholder-text {
+  font-size: 12px;
+  color: #4a5570;
   text-align: center;
-}
-
-.accepted-banner {
-  font-size: 14px;
-  font-weight: 600;
-  color: #00e5ff;
-  margin-bottom: 12px;
+  padding: 8px;
 }
 
 /* ---- Buttons ---- */
@@ -682,11 +644,6 @@
 }
 
 .btn-primary:hover:not(:disabled) { background: #33ecff; }
-
-.btn-secondary {
-  background: #1e2a45;
-  color: #a0b4d0;
-}
 
 .btn-small {
   padding: 6px 12px;

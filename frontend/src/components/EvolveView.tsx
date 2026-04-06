@@ -66,25 +66,8 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
       />
     </div>
   ) : (
-    <div
-      ref={previewCardRef}
-      className="card"
-      style={{
-        minWidth: 200,
-        maxWidth: 240,
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 120,
-        background: '#0f1628',
-        border: '1px dashed #2a3550',
-        borderRadius: 12,
-      }}
-    >
-      <span style={{ fontSize: 12, color: '#4a5570', textAlign: 'center', padding: 8 }}>
-        ? preview will appear here
-      </span>
+    <div ref={previewCardRef} className="evolve-placeholder-card">
+      <span className="evolve-placeholder-text">? preview will appear here</span>
     </div>
   );
 
@@ -116,7 +99,7 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
               Preview
             </button>
           </div>
-          <div className="suggestion-chips" style={isReadOnly ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+          <div className={`suggestion-chips${isReadOnly ? ' disabled' : ''}`}>
             {suggestions.map(s => (
               <button key={s} className="chip" onClick={() => setMutationText(s)}>{s}</button>
             ))}
@@ -127,9 +110,9 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
       {/* Preview details — shown when preview exists */}
       {preview && (!accepted || isReadOnly) && (
         <div className="evolve-preview-details">
-          <p className="reasoning-text reasoning-text-compact">{preview.reasoning}</p>
+          <p className="reasoning-text">{preview.reasoning}</p>
           {preview.variability > 0 && (
-            <div className="variability-bar variability-bar-compact">
+            <div className="variability-bar">
               <span className="variability-label">Variability</span>
               <div className="variability-track">
                 <div className="variability-fill" style={{ width: `${preview.variability * 100}%` }} />

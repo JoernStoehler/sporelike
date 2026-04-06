@@ -20,7 +20,6 @@ export function SpeciesCard({ species, glowVariant = 'none', changeLabel, size =
     glowVariant === 'new' || glowVariant === 'changed' ? 'amber-card' : '',
     isExtinct ? 'extinct-card' : '',
     isLarge ? 'card-large' : '',
-    isCompact ? 'card-compact' : '',
   ].filter(Boolean).join(' ');
 
   const imageBg = glowVariant === 'player'
@@ -37,16 +36,16 @@ export function SpeciesCard({ species, glowVariant = 'none', changeLabel, size =
         <span className={`badge ${isExtinct ? 'badge-extinct' : 'badge-amber'}`}>{changeLabel}</span>
       )}
       <div className={`card-image${isExtinct ? ' card-image-greyscale' : ''}`} style={{ background: imageBg }}>
-        <span className="card-image-icon" style={{ opacity: 0.6 }}>
+        <span className="card-image-icon">
           {glowVariant === 'player' ? '🧬' : '🦠'}
         </span>
         {isExtinct && <span className="skull-overlay">💀</span>}
       </div>
-      <div className="card-body" style={{ opacity: isExtinct ? 0.65 : 1 }}>
+      <div className="card-body">
         <h3 className="card-title">{species.name}</h3>
         <div className="trait-list">
           {traitsToShow.map(t => (
-            <span key={t} className="trait-pill" style={{ opacity: isExtinct ? 0.55 : 1 }}>{t}</span>
+            <span key={t} className="trait-pill">{t}</span>
           ))}
         </div>
         {isCompact && (

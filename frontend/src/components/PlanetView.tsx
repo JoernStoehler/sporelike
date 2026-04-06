@@ -20,7 +20,7 @@ export function PlanetView({ gameState, planets }: Props) {
   return (
     <div className="view planet-view">
       {/* Compact stats summary */}
-      <div className="planet-stats planet-stats--compact">
+      <div className="planet-stats">
         <div className="stat">
           <span className="stat-value">{gameState.eras.length}</span>
           <span className="stat-label">Eras</span>

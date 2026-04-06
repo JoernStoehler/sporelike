@@ -21,7 +21,7 @@ export function TopBar({ currentEra, eras, onEraSelect, showDropdown, onToggleDr
           {eras.map((era, i) => (
             <button
               key={era.number}
-              className={`era-dropdown-item ${i === eras.indexOf(currentEra) ? 'active' : ''}`}
+              className={`era-dropdown-item ${era.number === currentEra.number ? 'active' : ''}`}
               onClick={() => { onEraSelect(i); onToggleDropdown(); }}
             >
               <span>Era {era.number}</span>
