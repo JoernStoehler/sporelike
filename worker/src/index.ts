@@ -1,4 +1,4 @@
-import { callAnthropic, parseJsonResponse } from './anthropic';
+import { callGemini, parseJsonResponse } from './gemini';
 import {
   buildMutationPrompt,
   buildEraProgressionPrompt,
@@ -16,7 +16,7 @@ import type {
 // ---- Environment bindings ----
 
 interface Env {
-  ANTHROPIC_API_KEY: string;
+  GEMINI_API_KEY: string;
 }
 
 // ---- CORS helpers ----
@@ -95,7 +95,7 @@ async function handleMutationPreview(request: Request, env: Env): Promise<Respon
       playerSpecies: body.playerSpecies,
       requestedChange: body.requestedChange,
     });
-    rawText = await callAnthropic(env.ANTHROPIC_API_KEY, prompt);
+    rawText = await callGemini(env.GEMINI_API_KEY, prompt);
   } catch (err) {
     return errorResponse(`AI call failed: ${String(err)}`, 502);
   }
@@ -133,7 +133,7 @@ async function handleEraProgression(request: Request, env: Env): Promise<Respons
   let rawText: string;
   try {
     const prompt = buildEraProgressionPrompt(body);
-    rawText = await callAnthropic(env.ANTHROPIC_API_KEY, prompt);
+    rawText = await callGemini(env.GEMINI_API_KEY, prompt);
   } catch (err) {
     return errorResponse(`AI call failed: ${String(err)}`, 502);
   }
@@ -165,7 +165,7 @@ async function handleFreeformChallenge(request: Request, env: Env): Promise<Resp
   let rawText: string;
   try {
     const prompt = buildFreeformChallengePrompt(body.challenge, body.freeformText, body.era);
-    rawText = await callAnthropic(env.ANTHROPIC_API_KEY, prompt);
+    rawText = await callGemini(env.GEMINI_API_KEY, prompt);
   } catch (err) {
     return errorResponse(`AI call failed: ${String(err)}`, 502);
   }

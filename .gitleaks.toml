@@ -14,6 +14,12 @@ title = "sporelike gitleaks config"
   regex = '''[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{32}'''
   tags = ["key", "fal"]
 
+[[rules]]
+  id = "google-gemini-api-key"
+  description = "Google Gemini API key"
+  regex = '''AIzaSy[A-Za-z0-9_-]{33}'''
+  tags = ["key", "google", "gemini"]
+
 [allowlist]
   description = "Global allowlist"
   # Ignore the config file itself and example env templates
