@@ -187,6 +187,7 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname;
     const method = request.method;
+    const start = Date.now();
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
@@ -198,23 +199,34 @@ export default {
       return jsonResponse({ status: 'ok' });
     }
 
+    let response: Response;
+
     // Route POST endpoints
     if (method === 'POST') {
       switch (pathname) {
         case '/api/mutation-preview':
-          return handleMutationPreview(request, env);
+          response = await handleMutationPreview(request, env);
+          break;
 
         case '/api/era-progression':
-          return handleEraProgression(request, env);
+          response = await handleEraProgression(request, env);
+          break;
 
         case '/api/freeform-challenge':
-          return handleFreeformChallenge(request, env);
+          response = await handleFreeformChallenge(request, env);
+          break;
 
         default:
-          return errorResponse(`Unknown endpoint: ${pathname}`, 404);
+          response = errorResponse(`Unknown endpoint: ${pathname}`, 404);
       }
+    } else {
+      response = errorResponse(`Method ${method} not allowed`, 405);
     }
 
-    return errorResponse(`Method ${method} not allowed`, 405);
+    console.log(JSON.stringify({
+      method, pathname, status: response.status, ms: Date.now() - start,
+    }));
+
+    return response;
   },
 } satisfies ExportedHandler<Env>;

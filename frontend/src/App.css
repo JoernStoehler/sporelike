@@ -139,8 +139,10 @@
   position: relative;
 }
 
-.card-large {
-  width: 100%;
+.error-text {
+  font-size: 13px;
+  color: #ff6b6b;
+  margin-top: 8px;
 }
 
 .player-card {
@@ -216,10 +218,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.card-large .card-image {
-  height: 120px;
 }
 
 .card-image-icon {

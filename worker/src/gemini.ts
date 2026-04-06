@@ -10,6 +10,7 @@ interface GeminiRequest {
 interface GeminiResponse {
   candidates?: { content: { parts: { text: string }[] } }[];
   error?: { message: string; code: number };
+  usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number; totalTokenCount?: number };
 }
 
 /**
@@ -51,6 +52,13 @@ export async function callGemini(apiKey: string, prompt: string): Promise<string
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof text !== 'string') {
     throw new Error('Gemini API response missing text content');
+  }
+
+  const u = data.usageMetadata;
+  if (u) {
+    console.log(JSON.stringify({
+      gemini: MODEL, promptTokens: u.promptTokenCount, outputTokens: u.candidatesTokenCount, totalTokens: u.totalTokenCount,
+    }));
   }
 
   return text;

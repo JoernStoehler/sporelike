@@ -1,12 +1,12 @@
 import type {
   Era,
+  Challenge,
   MutationPreviewInput,
   MutationPreviewOutput,
   EraProgressionInput,
 } from './types';
-import type { Challenge } from './types';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export interface FreeformChallengeRequestBody {
   challenge: Challenge;

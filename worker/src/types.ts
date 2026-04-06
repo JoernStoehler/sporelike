@@ -90,13 +90,9 @@ export interface MutationPreviewOutput {
 
 // ---- Request body shapes for each endpoint ----
 
-export interface MutationPreviewRequestBody {
-  currentEra: Era;
-  playerSpecies: Species;
-  requestedChange: string;
-}
+export type MutationPreviewRequestBody = MutationPreviewInput;
 
-export interface EraProgressionRequestBody extends EraProgressionInput {}
+export type EraProgressionRequestBody = EraProgressionInput;
 
 export interface FreeformChallengeRequestBody {
   challenge: Challenge;

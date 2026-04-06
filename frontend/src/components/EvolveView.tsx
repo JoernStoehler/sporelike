@@ -24,7 +24,6 @@ export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOn
   const [accepted, setAccepted] = useState(isReadOnly);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const cardScrollRef = useRef<HTMLDivElement>(null);
   const previewCardRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
@@ -82,7 +81,7 @@ export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOn
   return (
     <div className="view evolve-view">
       {/* Horizontal scrollable card row */}
-      <div className="card-scroll" ref={cardScrollRef}>
+      <div className="card-scroll">
         <SpeciesCard species={playerSpecies} glowVariant="player" />
         {previewCard}
       </div>
