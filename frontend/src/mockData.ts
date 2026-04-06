@@ -1,0 +1,229 @@
+import type { Era, GameState } from './types';
+
+const era1: Era = {
+  number: 1,
+  name: 'The Primordial Pools',
+  playerSpeciesId: 'sp-cilia',
+  species: [
+    {
+      id: 'sp-cilia',
+      name: 'Cilia',
+      description: 'A fast-spinning photosynthetic microorganism that thrives in shallow, sunlit pools. Its hair-like cilia propel it rapidly through water while chloroplast-like organelles harvest light energy. Fragile but quick.',
+      imagePrompt: 'microscopic organism with flowing green cilia tendrils, bioluminescent, translucent body, in a sunlit tide pool, scientific illustration style',
+      traits: ['photosynthetic', 'fast-spinning', 'fragile', 'microscopic'],
+      isPlayer: true,
+    },
+    {
+      id: 'sp-gulper',
+      name: 'Gulper',
+      description: 'A slow, balloon-shaped predator that expands its membrane to engulf smaller organisms whole. Ambush hunter that drifts near thermal vents where prey congregates.',
+      imagePrompt: 'translucent balloon-shaped predatory microorganism with expanding membrane mouth, dark purple, floating near underwater thermal vent, scientific illustration style',
+      traits: ['predatory', 'slow', 'expandable-membrane', 'ambush'],
+      isPlayer: false,
+    },
+    {
+      id: 'sp-rockwort',
+      name: 'Rockwort',
+      description: 'A colonial organism that anchors to mineral deposits and filters nutrients from water currents. Forms dense mats that provide shelter for smaller species. Cannot move.',
+      imagePrompt: 'dense colony of orange-brown sessile filter-feeding organisms anchored to underwater rocks, branching structures, scientific illustration style',
+      traits: ['sessile', 'colonial', 'filter-feeder', 'shelter-provider'],
+      isPlayer: false,
+    },
+    {
+      id: 'sp-dartfin',
+      name: 'Dartfin',
+      description: 'A needle-shaped predator with a single powerful flagellum. Incredibly fast in straight lines but cannot turn well. Hunts by ramming prey at speed.',
+      imagePrompt: 'needle-shaped microscopic predator with single long flagellum tail, metallic silver body, streamlined, scientific illustration style',
+      traits: ['predatory', 'fast', 'poor-turning', 'ram-hunter'],
+      isPlayer: false,
+    },
+    {
+      id: 'sp-bloomdust',
+      name: 'Bloomdust',
+      description: 'Tiny photosynthetic particles that reproduce explosively when nutrients are abundant. Individually harmless but massive blooms deplete oxygen and choke other species.',
+      imagePrompt: 'cloud of tiny golden photosynthetic particles forming a dense bloom in water, sparkling, microscopic view, scientific illustration style',
+      traits: ['photosynthetic', 'fast-reproducing', 'bloom-forming', 'tiny'],
+      isPlayer: false,
+    },
+  ],
+  features: [
+    {
+      id: 'ft-thermal-vent',
+      name: 'Thermal Vent Field',
+      description: 'Cracks in the pool floor release warm, mineral-rich water. Creates temperature gradients that drive water circulation and concentrate nutrients.',
+      type: 'geological',
+      imagePrompt: 'underwater thermal vents with shimmering heat distortion and mineral deposits, dark rocky seafloor, warm orange glow',
+    },
+    {
+      id: 'ft-tidal-flats',
+      name: 'Tidal Flats',
+      description: 'Shallow areas that periodically dry out during low tide. Only organisms that can tolerate desiccation or burrow into wet sediment survive here.',
+      type: 'geological',
+      imagePrompt: 'shallow tidal flat with receding water, exposed sediment, small pools remaining, coastal microscopic ecosystem',
+    },
+    {
+      id: 'ft-nutrient-cycle',
+      name: 'Detritus Web',
+      description: 'Dead organisms decompose and release nutrients that fuel photosynthetic species. The faster things die, the richer the water becomes — creating boom-bust cycles.',
+      type: 'ecological',
+    },
+  ],
+  challenges: [
+    {
+      id: 'ch-1-gulper-ambush',
+      description: 'A Gulper has drifted into your feeding grounds near the thermal vents. Its membrane is already expanding. Your Cilia colony is directly in its path.',
+      involvedSpeciesIds: ['sp-cilia', 'sp-gulper'],
+      involvedFeatureIds: ['ft-thermal-vent'],
+      actions: [
+        { label: 'Scatter outward in all directions', outcome: 'Your colony fragments. Most escape, but the scattered individuals struggle to find food alone. Some drift into Dartfin territory.', pointsAwarded: 1 },
+        { label: 'Spin rapidly to create a water vortex', outcome: 'The coordinated spinning deflects the Gulper sideways! It tumbles past harmlessly. But the effort costs energy — your colony dims slightly.', pointsAwarded: 3 },
+        { label: 'Retreat behind the Rockwort mats', outcome: 'You shelter in the Rockwort colony. The Gulper can\'t reach you here, but the Rockwort filters nutrients from the water before you can absorb them. You\'re safe but hungry.', pointsAwarded: 2 },
+        { label: 'Hold position and hope it passes', outcome: 'The Gulper engulfs a significant portion of your colony. A harsh lesson in passivity.', pointsAwarded: 0 },
+      ],
+    },
+    {
+      id: 'ch-1-bloom-event',
+      description: 'A Bloomdust explosion is underway. Golden particles fill the water, blocking sunlight from reaching deeper layers. Your photosynthesis is dropping fast.',
+      involvedSpeciesIds: ['sp-cilia', 'sp-bloomdust'],
+      involvedFeatureIds: ['ft-nutrient-cycle'],
+      actions: [
+        { label: 'Rise to the surface above the bloom', outcome: 'You reach the sunlight but you\'re exposed — no shelter up here, and Dartfins patrol the open water. You photosynthesize frantically.', pointsAwarded: 2 },
+        { label: 'Switch to consuming dead Bloomdust particles', outcome: 'You tentatively absorb decomposing Bloomdust. It works! A new food source discovered — but your photosynthetic efficiency drops slightly from disuse.', pointsAwarded: 3 },
+        { label: 'Wait it out near the thermal vents', outcome: 'The vent warmth sustains you minimally. The bloom passes after a period of starvation, but you survive intact. Some weaker colony members don\'t make it.', pointsAwarded: 1 },
+      ],
+    },
+    {
+      id: 'ch-1-dartfin-chase',
+      description: 'A Dartfin has locked onto your colony during open-water transit. It\'s approaching fast in a straight line — you have seconds to react.',
+      involvedSpeciesIds: ['sp-cilia', 'sp-dartfin'],
+      involvedFeatureIds: [],
+      actions: [
+        { label: 'Sharp lateral dodge at the last moment', outcome: 'Your spinning cilia let you pivot sideways. The Dartfin rockets past, unable to turn. It\'ll take time to circle back — you\'re clear. Beautiful evasion!', pointsAwarded: 3 },
+        { label: 'Dive toward the pool floor', outcome: 'You descend rapidly. The Dartfin follows but slows near the sediment — its speed advantage disappears in tight spaces. You lose it in the Rockwort.', pointsAwarded: 2 },
+        { label: 'Release bioluminescent flash', outcome: 'You didn\'t know you could do that — but your chloroplasts flare brightly under stress. The Dartfin flinches and veers off. An accidental defense mechanism!', pointsAwarded: 2 },
+      ],
+    },
+  ],
+  events: [],
+};
+
+const era2: Era = {
+  number: 2,
+  name: 'The Thermal Awakening',
+  playerSpeciesId: 'sp-cilia-v2',
+  species: [
+    {
+      id: 'sp-cilia-v2',
+      name: 'Cilia (Adapted)',
+      description: 'Evolved Cilia with denser cilia rings and rudimentary light-flash capability. Can now consume organic detritus alongside photosynthesis — a flexible omnivore. Slightly larger and more resilient.',
+      imagePrompt: 'evolved microscopic organism with dense rings of green-blue cilia, bioluminescent flash organs, slightly larger than before, translucent body with visible organelles, scientific illustration style',
+      traits: ['photosynthetic', 'omnivorous', 'fast-spinning', 'bioluminescent', 'resilient'],
+      isPlayer: true,
+      parentId: 'sp-cilia',
+    },
+    {
+      id: 'sp-gulper',
+      name: 'Gulper',
+      description: 'Unchanged from the previous era. Still drifts and ambushes, but finding prey harder as species wise up.',
+      imagePrompt: 'translucent balloon-shaped predatory microorganism with expanding membrane mouth, dark purple, floating near underwater thermal vent, scientific illustration style',
+      traits: ['predatory', 'slow', 'expandable-membrane', 'ambush'],
+      isPlayer: false,
+    },
+    {
+      id: 'sp-rockwort',
+      name: 'Rockwort',
+      description: 'Thriving. The increased nutrient cycling from Bloomdust die-offs has accelerated Rockwort growth. Mats are now thick enough to create cave-like shelters.',
+      imagePrompt: 'massive dense colony of orange-brown sessile organisms forming cave-like structures underwater, thick branching mats, scientific illustration style',
+      traits: ['sessile', 'colonial', 'filter-feeder', 'shelter-provider', 'cave-forming'],
+      isPlayer: false,
+    },
+    {
+      id: 'sp-dartfin-v2',
+      name: 'Dartfin (Adapted)',
+      description: 'Some Dartfins evolved better turning ability after repeatedly missing agile prey like Cilia. Slower top speed but far more maneuverable. A direct response to evasive prey.',
+      imagePrompt: 'evolved needle-shaped predator with small lateral fins for steering, silver body slightly curved, more agile looking, scientific illustration style',
+      traits: ['predatory', 'agile', 'moderate-speed', 'pursuit-hunter'],
+      isPlayer: false,
+      parentId: 'sp-dartfin',
+    },
+    {
+      id: 'sp-thermophage',
+      name: 'Thermophage',
+      description: 'A new species that emerged near the thermal vents — feeds directly on mineral-rich vent water. Tough, heat-resistant, but completely dependent on the vents. Forked from Bloomdust ancestors that drifted into hot zones.',
+      imagePrompt: 'heat-resistant microscopic organism with crystalline red-orange shell, clustered around thermal vent, glowing with internal heat, scientific illustration style',
+      traits: ['thermophilic', 'mineral-feeding', 'heat-resistant', 'vent-dependent'],
+      isPlayer: false,
+      parentId: 'sp-bloomdust',
+    },
+  ],
+  features: [
+    {
+      id: 'ft-thermal-vent',
+      name: 'Thermal Vent Field (Expanding)',
+      description: 'The vent field has grown. New fissures opened, raising water temperature across a wider area. More minerals, but some cool-water zones are shrinking.',
+      type: 'geological',
+      imagePrompt: 'expanded underwater thermal vent field with multiple new fissures glowing orange, wider area of mineral deposits, rising heat shimmer',
+    },
+    {
+      id: 'ft-tidal-flats',
+      name: 'Tidal Flats',
+      description: 'Unchanged. Still a harsh environment that few species can tolerate.',
+      type: 'geological',
+      imagePrompt: 'shallow tidal flat with receding water, exposed sediment, small pools remaining, coastal microscopic ecosystem',
+    },
+    {
+      id: 'ft-nutrient-cycle',
+      name: 'Enriched Detritus Web',
+      description: 'Bloomdust die-offs after their population crash have flooded the system with decomposing matter. Nutrient levels are at an all-time high, favoring omnivores and filter feeders.',
+      type: 'ecological',
+    },
+  ],
+  challenges: [
+    {
+      id: 'ch-2-dartfin-pursuit',
+      description: 'The new agile Dartfins have learned to hunt in pairs. One drives you toward the other. Your old dodge-and-spin trick won\'t work against coordinated hunters.',
+      involvedSpeciesIds: ['sp-cilia-v2', 'sp-dartfin-v2'],
+      involvedFeatureIds: [],
+      actions: [
+        { label: 'Flash bioluminescence to confuse both hunters', outcome: 'Your light flash disorients the lead Dartfin, breaking their coordination. The ambusher strikes too early and misses. They collide. Effective!', pointsAwarded: 3 },
+        { label: 'Lead them into dense Rockwort caves', outcome: 'You weave through the cave-like Rockwort structures. The Dartfins\' speed is useless here. One gets tangled in the colonial tendrils. Victory through terrain!', pointsAwarded: 3 },
+        { label: 'Split the colony to confuse them', outcome: 'Half your colony goes each direction. The Dartfins each chase a fragment — but now your colony is divided and weakened. Pyrrhic survival.', pointsAwarded: 1 },
+      ],
+    },
+    {
+      id: 'ch-2-vent-expansion',
+      description: 'The expanding vent field is heating your usual feeding grounds. Photosynthesis works fine in warm water, but your food competitors (Rockwort) are growing faster in the heat. Resources are tightening.',
+      involvedSpeciesIds: ['sp-cilia-v2', 'sp-rockwort'],
+      involvedFeatureIds: ['ft-thermal-vent'],
+      actions: [
+        { label: 'Move to cooler peripheral zones', outcome: 'The edges are cooler and less contested. But they\'re also near the tidal flats — risky during low tide. You find a viable but precarious niche.', pointsAwarded: 2 },
+        { label: 'Develop heat tolerance and stay', outcome: 'Your omnivorous flexibility helps — you supplement photosynthesis by consuming heat-killed organisms near the vents. It\'s harsh but you\'re adapting.', pointsAwarded: 3 },
+        { label: 'Graze on the Rockwort itself', outcome: 'You discover that young Rockwort shoots are edible! This puts you in direct competition with Thermophages, but opens a rich food source.', pointsAwarded: 2 },
+      ],
+    },
+    {
+      id: 'ch-2-thermophage-encounter',
+      description: 'Thermophages are multiplying around the vents, consuming minerals that used to wash into your feeding zones. Their crystalline shells make them nearly inedible. A new competitor with no natural predators.',
+      involvedSpeciesIds: ['sp-cilia-v2', 'sp-thermophage'],
+      involvedFeatureIds: ['ft-thermal-vent', 'ft-nutrient-cycle'],
+      actions: [
+        { label: 'Ignore them — focus on surface waters', outcome: 'You cede the vent zone to Thermophages and focus on sunlit surface areas. Viable for now, but you\'re losing territory.', pointsAwarded: 1 },
+        { label: 'Investigate their crystalline shells for weaknesses', outcome: 'You notice the shells crack when rapidly cooled. If you could lure them away from the vents into cold water... a strategy forms.', pointsAwarded: 3 },
+        { label: 'Form a symbiotic relationship', outcome: 'You hover near Thermophages, consuming the mineral-rich waste they excrete. They don\'t seem to mind. An uneasy mutualism begins.', pointsAwarded: 2 },
+      ],
+    },
+  ],
+  events: [
+    { type: 'extinction', description: 'Bloomdust populations crashed after a massive bloom depleted all available nutrients. Only a few survivors remain in sheltered pools.', speciesIds: ['sp-bloomdust'], featureIds: ['ft-nutrient-cycle'] },
+    { type: 'evolution', description: 'Dartfins evolved lateral fins for better maneuverability, adapting to prey that learned to dodge straight-line charges.', speciesIds: ['sp-dartfin', 'sp-dartfin-v2'], featureIds: [] },
+    { type: 'fork', description: 'Bloomdust survivors near thermal vents evolved into Thermophages — heat-resistant, mineral-feeding organisms with crystalline shells.', speciesIds: ['sp-bloomdust', 'sp-thermophage'], featureIds: ['ft-thermal-vent'] },
+    { type: 'geological', description: 'The thermal vent field expanded, opening new fissures and raising water temperature across a wider area.', speciesIds: [], featureIds: ['ft-thermal-vent'] },
+    { type: 'ecological', description: 'Nutrient levels spiked from Bloomdust decomposition, creating an enriched detritus web favoring omnivores and filter feeders.', speciesIds: [], featureIds: ['ft-nutrient-cycle'] },
+  ],
+};
+
+export const mockGameState: GameState = {
+  currentEraIndex: 1,
+  eras: [era1, era2],
+  mutationCandidates: [],
+};

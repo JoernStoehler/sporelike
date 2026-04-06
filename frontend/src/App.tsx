@@ -1,60 +1,45 @@
 import { useState } from 'react'
 import './App.css'
-
-const MENU = [
-  { name: 'The Segfault', desc: 'Espresso so strong it crashes your morning', price: '$4.99' },
-  { name: 'Null Pointer Latte', desc: 'Smooth until it unexpectedly fails you', price: '$5.49' },
-  { name: 'Infinite Loop Cold Brew', desc: 'You keep drinking and it never ends', price: '$6.00' },
-]
+import { mockGameState } from './mockData'
+import type { TabId } from './components/BottomNav'
+import { TopBar } from './components/TopBar'
+import { BottomNav } from './components/BottomNav'
+import { PlanetView } from './components/PlanetView'
+import { EcosystemView } from './components/EcosystemView'
+import { ChallengeView } from './components/ChallengeView'
+import { EvolveView } from './components/EvolveView'
 
 function App() {
-  const [ordered, setOrdered] = useState(false)
+  const [gameState] = useState(mockGameState)
+  const [viewEraIndex, setViewEraIndex] = useState(gameState.currentEraIndex)
+  const [activeTab, setActiveTab] = useState<TabId>('ecosystem')
+  const [showEraDropdown, setShowEraDropdown] = useState(false)
 
-  function handleOrder() {
-    setOrdered(true)
-    alert('Order placed! Your bugs will be ready shortly.')
+  const currentEra = gameState.eras[viewEraIndex]
+  const previousEra = viewEraIndex > 0 ? gameState.eras[viewEraIndex - 1] : undefined
+
+  function handleAdvanceEra() {
+    alert('Era advancement would trigger AI generation here!')
   }
 
   return (
-    <div className="shop">
-      <header>
-        <div className="logo">☕</div>
-        <h1>Cup O' Code Coffee Shop</h1>
-        <p className="tagline">Fueling developers since compile time</p>
-      </header>
+    <div className="app">
+      <TopBar
+        currentEra={currentEra}
+        eras={gameState.eras}
+        onEraSelect={setViewEraIndex}
+        showDropdown={showEraDropdown}
+        onToggleDropdown={() => setShowEraDropdown(!showEraDropdown)}
+      />
 
-      <main>
-        <h2>Today's Menu</h2>
-        <ul className="menu">
-          {MENU.map((item) => (
-            <li key={item.name} className="menu-item">
-              <div className="item-info">
-                <span className="item-name">{item.name}</span>
-                <span className="item-desc">{item.desc}</span>
-              </div>
-              <span className="item-price">{item.price}</span>
-            </li>
-          ))}
-        </ul>
-
-        <button
-          className={`order-btn ${ordered ? 'ordered' : ''}`}
-          onClick={handleOrder}
-          disabled={ordered}
-        >
-          {ordered ? 'Order Placed!' : 'Place Order'}
-        </button>
-
-        {ordered && (
-          <p className="order-status">
-            Brewing your existential crisis... please hold.
-          </p>
-        )}
+      <main className="main-content" onClick={() => showEraDropdown && setShowEraDropdown(false)}>
+        {activeTab === 'planet' && <PlanetView gameState={gameState} />}
+        {activeTab === 'ecosystem' && <EcosystemView era={currentEra} previousEra={previousEra} />}
+        {activeTab === 'challenges' && <ChallengeView challenges={currentEra.challenges} onAllComplete={() => setActiveTab('evolve')} />}
+        {activeTab === 'evolve' && <EvolveView era={currentEra} onAdvanceEra={handleAdvanceEra} />}
       </main>
 
-      <footer>
-        <p>© 2024 Cup O' Code · placeholder content · not a real coffee shop</p>
-      </footer>
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   )
 }
