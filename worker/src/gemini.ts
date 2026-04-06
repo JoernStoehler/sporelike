@@ -1,7 +1,7 @@
 // Raw fetch wrapper for the Gemini API.
 // No SDK — plain fetch only.
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-2.5-flash-lite';
 
 interface GeminiRequest {
   contents: { parts: { text: string }[] }[];
