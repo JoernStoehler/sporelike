@@ -9,7 +9,7 @@ interface Props {
 
 type CardItem =
   | { kind: 'species'; species: Species; glowVariant: 'player' | 'new' | 'changed' | 'extinct' | 'none'; label?: string }
-  | { kind: 'feature'; feature: Feature; glowVariant: 'new' | 'changed' | 'none' };
+  | { kind: 'feature'; feature: Feature; glowVariant: 'new' | 'changed' | 'removed' | 'none' };
 
 export function EcosystemView({ era, previousEra }: Props) {
   const prevSpeciesMap = new Map(previousEra?.species.map(s => [s.id, s]) ?? []);
@@ -43,10 +43,10 @@ export function EcosystemView({ era, previousEra }: Props) {
     const evolvedFromPrev = species.parentId != null && prevSpeciesMap.has(species.parentId);
 
     if (isNewId || evolvedFromPrev) {
-      const label = evolvedFromPrev ? 'EVOLVED' : 'NEW';
+      const label = evolvedFromPrev ? 'MUTATED' : 'NEW';
       cards.push({ kind: 'species', species, glowVariant: 'new', label });
     } else if (prev && prev.description !== species.description) {
-      cards.push({ kind: 'species', species, glowVariant: 'changed', label: 'CHANGED' });
+      cards.push({ kind: 'species', species, glowVariant: 'changed', label: 'ADAPTED' });
     } else {
       cards.push({ kind: 'species', species, glowVariant: 'none' });
     }
@@ -62,6 +62,8 @@ export function EcosystemView({ era, previousEra }: Props) {
   }
 
   // --- Features ---
+  const currentFeatureIds = new Set(era.features.map(f => f.id));
+
   for (const feature of era.features) {
     if (previousEra == null) {
       cards.push({ kind: 'feature', feature, glowVariant: 'none' });
@@ -75,6 +77,15 @@ export function EcosystemView({ era, previousEra }: Props) {
       cards.push({ kind: 'feature', feature, glowVariant: 'changed' });
     } else {
       cards.push({ kind: 'feature', feature, glowVariant: 'none' });
+    }
+  }
+
+  // --- Removed features (in previous era but not in current) ---
+  if (previousEra) {
+    for (const prevFeature of previousEra.features) {
+      if (!currentFeatureIds.has(prevFeature.id)) {
+        cards.push({ kind: 'feature', feature: prevFeature, glowVariant: 'removed' });
+      }
     }
   }
 

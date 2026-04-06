@@ -4,12 +4,13 @@ interface Props {
   species: Species;
   glowVariant?: 'player' | 'new' | 'changed' | 'extinct' | 'none';
   changeLabel?: string;
-  size?: 'normal' | 'large';
+  size?: 'normal' | 'large' | 'compact';
   onClick?: () => void;
 }
 
 export function SpeciesCard({ species, glowVariant = 'none', changeLabel, size = 'normal', onClick }: Props) {
   const isLarge = size === 'large';
+  const isCompact = size === 'compact';
   const isExtinct = glowVariant === 'extinct';
 
   const cardClass = [
@@ -19,39 +20,40 @@ export function SpeciesCard({ species, glowVariant = 'none', changeLabel, size =
     glowVariant === 'new' || glowVariant === 'changed' ? 'amber-card' : '',
     isExtinct ? 'extinct-card' : '',
     isLarge ? 'card-large' : '',
+    isCompact ? 'card-compact' : '',
   ].filter(Boolean).join(' ');
 
   const imageBg = glowVariant === 'player'
     ? 'linear-gradient(135deg, #0a3d2a, #0d4f4f)'
-    : isExtinct
-      ? 'linear-gradient(135deg, #1a0a0a, #2d0f0f)'
-      : 'linear-gradient(135deg, #1a1a3e, #2d1b4e)';
+    : 'linear-gradient(135deg, #1a1a3e, #2d1b4e)';
+
+  // In compact mode only show up to 2 traits to save space
+  const traitsToShow = isCompact ? species.traits.slice(0, 2) : species.traits;
 
   return (
     <div className={cardClass} onClick={onClick}>
-      {glowVariant === 'player' && <span className="badge badge-player">YOUR SPECIES</span>}
+      {glowVariant === 'player' && <span className="badge badge-player">{isCompact ? 'YOU' : 'YOUR SPECIES'}</span>}
       {changeLabel && glowVariant !== 'player' && (
         <span className={`badge ${isExtinct ? 'badge-extinct' : 'badge-amber'}`}>{changeLabel}</span>
       )}
-      <div className="card-image" style={{ background: imageBg }}>
-        <span className="card-image-icon" style={{ opacity: isExtinct ? 0.3 : 0.6 }}>
-          {glowVariant === 'player' ? '🧬' : isExtinct ? '💀' : '🦠'}
+      <div className={`card-image${isExtinct ? ' card-image-greyscale' : ''}`} style={{ background: imageBg }}>
+        <span className="card-image-icon" style={{ opacity: 0.6 }}>
+          {glowVariant === 'player' ? '🧬' : '🦠'}
         </span>
+        {isExtinct && <span className="skull-overlay">💀</span>}
       </div>
-      <div className="card-body" style={{ opacity: isExtinct ? 0.5 : 1 }}>
+      <div className="card-body" style={{ opacity: isExtinct ? 0.65 : 1 }}>
         <h3 className="card-title">{species.name}</h3>
-        {!isExtinct && (
-          <div className="trait-list">
-            {species.traits.map(t => <span key={t} className="trait-pill">{t}</span>)}
-          </div>
+        <div className="trait-list">
+          {traitsToShow.map(t => (
+            <span key={t} className="trait-pill" style={{ opacity: isExtinct ? 0.55 : 1 }}>{t}</span>
+          ))}
+        </div>
+        {isCompact && (
+          <p className="card-desc">{species.description.slice(0, 40)}{species.description.length > 40 ? '…' : ''}</p>
         )}
-        {isExtinct && (
-          <div className="trait-list">
-            {species.traits.map(t => <span key={t} className="trait-pill trait-pill-extinct">{t}</span>)}
-          </div>
-        )}
-        {(isLarge || !onClick) && <p className="card-desc">{species.description}</p>}
-        {!isLarge && onClick && <p className="card-desc">{species.description.slice(0, 80)}…</p>}
+        {!isCompact && (isLarge || !onClick) && <p className="card-desc">{species.description}</p>}
+        {!isCompact && !isLarge && onClick && <p className="card-desc">{species.description.slice(0, 80)}…</p>}
       </div>
     </div>
   );
