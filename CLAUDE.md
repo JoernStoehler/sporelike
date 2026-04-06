@@ -31,8 +31,10 @@ cd worker && npx tsc --noEmit
 
 - `frontend/src/types.ts` — canonical type definitions (source of truth)
 - `frontend/src/api.ts` — API client (fetchMutationPreview, fetchFreeformChallenge, fetchEraProgression)
-- `frontend/src/mockData.ts` — 2 eras of mock data with placeholder images
-- `frontend/src/App.tsx` — root component, all top-level state
+- `frontend/src/gameReducer.ts` — useReducer actions + reducer for GameState
+- `frontend/src/newGame.ts` — fresh game factory (era 1 seed)
+- `frontend/src/mockData.ts` — 2 eras of mock data with placeholder images (dev reference only)
+- `frontend/src/App.tsx` — root component, useReducer + UIState, localStorage persistence
 - `worker/src/gemini.ts` — raw fetch to Gemini API + JSON response parser
 - `worker/src/prompts.ts` — prompt builders (mutation, era progression, freeform challenge)
 - `worker/src/index.ts` — 3 POST endpoints + CORS + validation

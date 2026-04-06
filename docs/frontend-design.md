@@ -212,6 +212,5 @@ EvolveView scrolls to bring the preview card into view after generating a mutati
 **Not yet implemented**:
 - Automated image generation via fal.ai (imagePrompt fields are populated by the AI but no image generation call is made)
 - Planet switching / new game creation
-- Persisted state (all state is in-memory, seeded from mockData)
 - Dynamic mutation suggestion chips
 - Color scheme evolution per era

@@ -38,14 +38,15 @@ sporelike/
 
 **Stack**: React 19 + TypeScript 5.9 + Vite 8, no external state library, no router.
 
-**State model**: All mutable state lives in `App.tsx` via `useState`. Currently seeded from `mockData.ts`. The eventual pattern is React context + `useReducer` for `GameState` as the app grows.
+**State model**: Two state objects with a clean boundary:
 
-Key state variables in `App.tsx`:
-- `gameState: GameState` — full era history + mutation candidates
-- `viewEraIndex: number` — which era the UI is showing (enables read-only time travel)
-- `activeTab: TabId` — which of the four views is visible
-- `showEraDropdown: boolean` — controls the era picker overlay
-- `advanceLoading: boolean` — true while era progression AI call is in flight
+1. **`gameState`** (`useReducer` in App.tsx) — serializable game data, persisted to `localStorage` on every change. Reducer in `gameReducer.ts` with named actions: `MAKE_CHALLENGE_CHOICE`, `ACCEPT_MUTATION`, `ADVANCE_ERA`, `LOAD_SAVE`. Initialized from localStorage (key `sporelike:save:{planetId}`), falls back to `newGameState()` from `newGame.ts`.
+
+2. **UI state** (`useState` in App.tsx) — survives tab switches but not refresh. Includes `viewEraIndex`, `activeTab`, `challengeIndex`, `freeformOutcomes`, etc. Reset when `viewEraIndex` changes.
+
+3. **Evolve draft** (`useState` + localStorage) — mutation text, preview result, accepted flag. Persisted to `sporelike:draft:{planetId}` so the expensive AI preview survives refresh. Cleared on era advance.
+
+Components receive state as props and dispatch changes via callbacks. Local component state is only for truly transient UI (loading spinners, error messages, in-progress freeform text).
 
 **Component tree**:
 ```
