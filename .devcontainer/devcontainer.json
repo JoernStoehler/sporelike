@@ -1,0 +1,68 @@
+{
+  // Local devcontainer for sporelike (Jörn's Ubuntu desktop).
+  // PRIMARY ENVIRONMENT.
+  //
+  // Features:
+  // - Bind mounts for cache persistence (npm)
+  // - Bind mounts for OAuth persistence (gh, claude, vscode tunnel)
+  //
+  // Prerequisites on host:
+  // - /srv/devhome/ directories exist (shared with other devcontainers)
+  // - devcontainer CLI: npm i -g @devcontainers/cli
+  //
+  // Usage from host:
+  //   .devcontainer/host-devcontainer-rebuild.sh
+  //   .devcontainer/host-vscode-tunnel.sh
+  "name": "sporelike",
+  "dockerFile": "Dockerfile",
+  "workspaceFolder": "/workspaces/sporelike",
+  "updateRemoteUserUID": true,
+  "features": {},
+  // Memory limit: 4GB RAM + 1GB swap max. Protects host from runaway processes.
+  // Container survives OOM; only the offending process is killed.
+  // --memory-swap is total (RAM+swap), so 5g-4g = 1GB swap allowed.
+  "runArgs": ["--memory=4g", "--memory-swap=5g"],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "containerEnv": {
+    "TERM": "xterm-256color",
+    "LANG": "en_US.UTF-8",
+    "DEVCONTAINER_ENV": "local",
+    "HISTFILE": "/home/vscode/.bash_history_dir/.bash_history",
+    // Claude Code stores .claude.json at $CLAUDE_CONFIG_DIR (default: $HOME).
+    // Must point inside ~/.claude/ so it's included in the bind mount.
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    // Store VS Code tunnel auth in files instead of system keychain (persisted via ~/.vscode bind mount)
+    "VSCODE_CLI_USE_FILE_KEYCHAIN": "1"
+  },
+  // Bind mounts: Jörn's specific host paths for cache persistence.
+  "mounts": [
+    "source=/srv/devhome/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
+    "source=/srv/devhome/.config/gh,target=/home/vscode/.config/gh,type=bind,consistency=cached",
+    "source=/srv/devhome/.cache/npm,target=/home/vscode/.cache/npm,type=bind,consistency=cached",
+    "source=/srv/devhome/.bash_history_dir,target=/home/vscode/.bash_history_dir,type=bind,consistency=cached",
+    "source=sporelike-vscode,target=/home/vscode/.vscode,type=volume"
+  ],
+  "forwardPorts": [5173, 8787],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite dev",
+      "onAutoForward": "notify"
+    },
+    "8787": {
+      "label": "Wrangler dev",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  }
+}

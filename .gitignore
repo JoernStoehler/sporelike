@@ -30,3 +30,4 @@ dist-ssr
 *.sw?
 screenshots/
 worker/.wrangler/
+.Trash-1000/
