@@ -51,9 +51,13 @@ export function PlanetView({ gameState, planets }: Props) {
               ].filter(Boolean).join(' ')}
             >
               <div className={planetImageClass(planet.id)}>
-                <span className="card-image-icon">
-                  {isNew ? '➕' : '🪐'}
-                </span>
+                {planet.imageUrl ? (
+                  <img src={planet.imageUrl} alt={planet.name} className="card-image-img" />
+                ) : (
+                  <span className="card-image-icon">
+                    {isNew ? '➕' : '🪐'}
+                  </span>
+                )}
               </div>
               <div className="card-body">
                 <div className="card-title">{planet.name}</div>

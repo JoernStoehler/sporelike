@@ -27,7 +27,11 @@ export function FeatureCard({ feature, glowVariant = 'none' }: Props) {
         <span className={`badge ${glowVariant === 'removed' ? 'badge-extinct' : 'badge-amber'}`}>{badgeText}</span>
       )}
       <div className="card-image feature-card-image">
-        <span className="card-image-icon">{icon}</span>
+        {feature.imageUrl ? (
+          <img src={feature.imageUrl} alt={feature.name} className="card-image-img" />
+        ) : (
+          <span className="card-image-icon">{icon}</span>
+        )}
       </div>
       <div className="card-body">
         <h3 className="card-title">{feature.name}</h3>

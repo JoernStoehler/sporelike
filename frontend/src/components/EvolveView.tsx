@@ -1,15 +1,17 @@
 import { useRef, useState } from 'react';
 import type { Era, Species } from '../types';
 import { SpeciesCard } from './SpeciesCard';
+import { fetchMutationPreview } from '../api';
 
 interface Props {
   era: Era;
   onAdvanceEra: () => void;
+  advanceLoading?: boolean;
   isReadOnly?: boolean;
   nextEraPlayerSpecies?: Species;
 }
 
-export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlayerSpecies }: Props) {
+export function EvolveView({ era, onAdvanceEra, advanceLoading = false, isReadOnly = false, nextEraPlayerSpecies }: Props) {
   const playerSpecies = era.species.find(s => s.id === era.playerSpeciesId)!;
   const [mutationText, setMutationText] = useState(
     isReadOnly && nextEraPlayerSpecies ? `Evolved into ${nextEraPlayerSpecies.name}` : ''
@@ -20,6 +22,8 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
       : null
   );
   const [accepted, setAccepted] = useState(isReadOnly);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const cardScrollRef = useRef<HTMLDivElement>(null);
   const previewCardRef = useRef<HTMLDivElement>(null);
 
@@ -29,28 +33,32 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
     'Become more aggressive',
   ];
 
-  function handlePreview() {
-    if (!mutationText.trim()) return;
-    // Mock preview — in real app this calls the AI
-    const newPreview = {
-      species: {
-        ...playerSpecies,
-        id: playerSpecies.id + '-next',
-        name: playerSpecies.name + ' (Mutated)',
-        description: playerSpecies.description + ' Now adapting: ' + mutationText,
-        traits: [...playerSpecies.traits, mutationText.split(' ').slice(0, 2).join('-').toLowerCase()],
-        parentId: playerSpecies.id,
-      },
-      reasoning: `This mutation responds to current ecological pressures. ${mutationText} would allow the species to better compete for resources near the thermal vents while maintaining its existing adaptations.`,
-      variability: 0.4,
-    };
-    setPreview(newPreview);
-    // Auto-scroll the card row to show the preview card
-    setTimeout(() => {
-      if (previewCardRef.current) {
-        previewCardRef.current.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
-      }
-    }, 50);
+  async function handlePreview() {
+    if (!mutationText.trim() || previewLoading) return;
+    setPreviewLoading(true);
+    setPreviewError(null);
+    try {
+      const result = await fetchMutationPreview({
+        currentEra: era,
+        playerSpecies,
+        requestedChange: mutationText,
+      });
+      setPreview({
+        species: result.species,
+        reasoning: result.reasoning,
+        variability: result.variabilityScore,
+      });
+      // Auto-scroll the card row to show the preview card
+      setTimeout(() => {
+        if (previewCardRef.current) {
+          previewCardRef.current.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+        }
+      }, 50);
+    } catch (err) {
+      setPreviewError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setPreviewLoading(false);
+    }
   }
 
   function handleAccept() {
@@ -94,11 +102,12 @@ export function EvolveView({ era, onAdvanceEra, isReadOnly = false, nextEraPlaye
             <button
               className="btn btn-primary"
               onClick={handlePreview}
-              disabled={isReadOnly || !mutationText.trim()}
+              disabled={isReadOnly || !mutationText.trim() || previewLoading}
             >
-              Preview
+              {previewLoading ? 'Generating...' : 'Preview'}
             </button>
           </div>
+          {previewError && <p className="error-text">{previewError}</p>}
           <div className={`suggestion-chips${isReadOnly ? ' disabled' : ''}`}>
             {suggestions.map(s => (
               <button key={s} className="chip" onClick={() => setMutationText(s)}>{s}</button>

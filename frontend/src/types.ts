@@ -7,6 +7,7 @@ export interface Planet {
   eraCount: number;
   speciesCount: number;
   imagePrompt?: string;
+  imageUrl?: string;
 }
 
 // ---- Core game entities ----

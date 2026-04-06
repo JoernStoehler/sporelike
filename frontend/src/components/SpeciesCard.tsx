@@ -35,10 +35,14 @@ export function SpeciesCard({ species, glowVariant = 'none', changeLabel, size =
       {changeLabel && glowVariant !== 'player' && (
         <span className={`badge ${isExtinct ? 'badge-extinct' : 'badge-amber'}`}>{changeLabel}</span>
       )}
-      <div className={`card-image${isExtinct ? ' card-image-greyscale' : ''}`} style={{ background: imageBg }}>
-        <span className="card-image-icon">
-          {glowVariant === 'player' ? '🧬' : '🦠'}
-        </span>
+      <div className={`card-image${isExtinct ? ' card-image-greyscale' : ''}`} style={{ background: species.imageUrl ? undefined : imageBg }}>
+        {species.imageUrl ? (
+          <img src={species.imageUrl} alt={species.name} className="card-image-img" />
+        ) : (
+          <span className="card-image-icon">
+            {glowVariant === 'player' ? '🧬' : '🦠'}
+          </span>
+        )}
         {isExtinct && <span className="skull-overlay">💀</span>}
       </div>
       <div className="card-body">

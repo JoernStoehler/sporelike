@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import type { Challenge } from '../types';
+import type { Challenge, Era } from '../types';
+import { fetchFreeformChallenge } from '../api';
 
 interface Props {
   challenges: Challenge[];
+  currentEra: Era;
   onAllComplete: () => void;
   isReadOnly?: boolean;
 }
 
-export function ChallengeView({ challenges, onAllComplete, isReadOnly = false }: Props) {
+export function ChallengeView({ challenges, currentEra, onAllComplete, isReadOnly = false }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [choices, setChoices] = useState<Map<string, { choice: number | 'freeform'; text?: string }>>(() => {
     if (isReadOnly) {
@@ -22,6 +24,9 @@ export function ChallengeView({ challenges, onAllComplete, isReadOnly = false }:
     return new Map();
   });
   const [freeformText, setFreeformText] = useState('');
+  const [freeformLoading, setFreeformLoading] = useState(false);
+  const [freeformError, setFreeformError] = useState<string | null>(null);
+  const [freeformOutcomes, setFreeformOutcomes] = useState<Map<string, string>>(new Map());
 
   const challenge = challenges[currentIndex];
   const chosen = choices.get(challenge?.id);
@@ -32,10 +37,25 @@ export function ChallengeView({ challenges, onAllComplete, isReadOnly = false }:
     setChoices(new Map(choices).set(challenge.id, { choice: actionIndex }));
   }
 
-  function submitFreeform() {
-    if (chosen || !freeformText.trim() || isReadOnly) return;
-    setChoices(new Map(choices).set(challenge.id, { choice: 'freeform', text: freeformText }));
-    setFreeformText('');
+  async function submitFreeform() {
+    if (chosen || !freeformText.trim() || isReadOnly || freeformLoading) return;
+    const submittedText = freeformText;
+    setFreeformLoading(true);
+    setFreeformError(null);
+    try {
+      const result = await fetchFreeformChallenge({
+        challenge,
+        freeformText: submittedText,
+        era: currentEra,
+      });
+      setFreeformOutcomes(new Map(freeformOutcomes).set(challenge.id, result.outcome));
+      setChoices(new Map(choices).set(challenge.id, { choice: 'freeform', text: submittedText }));
+      setFreeformText('');
+    } catch (err) {
+      setFreeformError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setFreeformLoading(false);
+    }
   }
 
   function next() {
@@ -87,15 +107,22 @@ export function ChallengeView({ challenges, onAllComplete, isReadOnly = false }:
               value={freeformText}
               onChange={e => setFreeformText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submitFreeform()}
+              disabled={freeformLoading}
             />
-            <button className="btn btn-small" onClick={submitFreeform} disabled={!freeformText.trim()}>Go</button>
+            <button className="btn btn-small" onClick={submitFreeform} disabled={!freeformText.trim() || freeformLoading}>
+              {freeformLoading ? '...' : 'Go'}
+            </button>
           </div>
+        )}
+
+        {freeformError && !chosen && (
+          <p className="error-text">{freeformError}</p>
         )}
 
         {chosen?.choice === 'freeform' && (
           <div className="freeform-result">
             <p className="freeform-action">You: "{chosen.text}"</p>
-            <p className="action-outcome">The ecosystem responds in unexpected ways... (AI response would appear here)</p>
+            <p className="action-outcome">{freeformOutcomes.get(challenge.id) ?? challenge.playerOutcome ?? 'The ecosystem responds...'}</p>
           </div>
         )}
       </div>
