@@ -4,11 +4,23 @@ import type { Challenge } from '../types';
 interface Props {
   challenges: Challenge[];
   onAllComplete: () => void;
+  isReadOnly?: boolean;
 }
 
-export function ChallengeView({ challenges, onAllComplete }: Props) {
+export function ChallengeView({ challenges, onAllComplete, isReadOnly = false }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [choices, setChoices] = useState<Map<string, { choice: number | 'freeform'; text?: string }>>(new Map());
+  const [choices, setChoices] = useState<Map<string, { choice: number | 'freeform'; text?: string }>>(() => {
+    if (isReadOnly) {
+      const map = new Map<string, { choice: number | 'freeform'; text?: string }>();
+      for (const challenge of challenges) {
+        if (challenge.playerChoice !== undefined) {
+          map.set(challenge.id, { choice: challenge.playerChoice });
+        }
+      }
+      return map;
+    }
+    return new Map();
+  });
   const [freeformText, setFreeformText] = useState('');
 
   const challenge = challenges[currentIndex];
@@ -16,12 +28,12 @@ export function ChallengeView({ challenges, onAllComplete }: Props) {
   const allDone = choices.size === challenges.length;
 
   function pickAction(actionIndex: number) {
-    if (chosen) return;
+    if (chosen || isReadOnly) return;
     setChoices(new Map(choices).set(challenge.id, { choice: actionIndex }));
   }
 
   function submitFreeform() {
-    if (chosen || !freeformText.trim()) return;
+    if (chosen || !freeformText.trim() || isReadOnly) return;
     setChoices(new Map(choices).set(challenge.id, { choice: 'freeform', text: freeformText }));
     setFreeformText('');
   }
@@ -57,7 +69,7 @@ export function ChallengeView({ challenges, onAllComplete }: Props) {
               key={i}
               className={`action-btn ${chosen?.choice === i ? 'chosen' : ''} ${chosen && chosen.choice !== i ? 'dimmed' : ''}`}
               onClick={() => pickAction(i)}
-              disabled={chosen != null}
+              disabled={isReadOnly || chosen != null}
             >
               <span className="action-label">{action.label}</span>
               {chosen?.choice === i && (
@@ -67,7 +79,7 @@ export function ChallengeView({ challenges, onAllComplete }: Props) {
           ))}
         </div>
 
-        {!chosen && (
+        {!isReadOnly && !chosen && (
           <div className="freeform-input">
             <input
               type="text"
@@ -93,7 +105,7 @@ export function ChallengeView({ challenges, onAllComplete }: Props) {
         <span className="challenge-counter">{currentIndex + 1} / {challenges.length}</span>
         {currentIndex < challenges.length - 1 ? (
           <button className="btn btn-small" onClick={next}>Next →</button>
-        ) : allDone ? (
+        ) : isReadOnly ? null : allDone ? (
           <button className="btn btn-primary" onClick={onAllComplete}>Ready to Evolve →</button>
         ) : (
           <button className="btn btn-small" disabled>Complete all challenges</button>

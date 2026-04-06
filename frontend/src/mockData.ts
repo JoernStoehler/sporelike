@@ -80,6 +80,7 @@ const era1: Era = {
         { label: 'Retreat behind the Rockwort mats', outcome: 'You shelter in the Rockwort colony. The Gulper can\'t reach you here, but the Rockwort filters nutrients from the water before you can absorb them. You\'re safe but hungry.', pointsAwarded: 2 },
         { label: 'Hold position and hope it passes', outcome: 'The Gulper engulfs a significant portion of your colony. A harsh lesson in passivity.', pointsAwarded: 0 },
       ],
+      playerChoice: 1,
     },
     {
       id: 'ch-1-bloom-event',
@@ -91,6 +92,7 @@ const era1: Era = {
         { label: 'Switch to consuming dead Bloomdust particles', outcome: 'You tentatively absorb decomposing Bloomdust. It works! A new food source discovered — but your photosynthetic efficiency drops slightly from disuse.', pointsAwarded: 3 },
         { label: 'Wait it out near the thermal vents', outcome: 'The vent warmth sustains you minimally. The bloom passes after a period of starvation, but you survive intact. Some weaker colony members don\'t make it.', pointsAwarded: 1 },
       ],
+      playerChoice: 1,
     },
     {
       id: 'ch-1-dartfin-chase',
@@ -102,6 +104,7 @@ const era1: Era = {
         { label: 'Dive toward the pool floor', outcome: 'You descend rapidly. The Dartfin follows but slows near the sediment — its speed advantage disappears in tight spaces. You lose it in the Rockwort.', pointsAwarded: 2 },
         { label: 'Release bioluminescent flash', outcome: 'You didn\'t know you could do that — but your chloroplasts flare brightly under stress. The Dartfin flinches and veers off. An accidental defense mechanism!', pointsAwarded: 2 },
       ],
+      playerChoice: 0,
     },
   ],
   events: [],

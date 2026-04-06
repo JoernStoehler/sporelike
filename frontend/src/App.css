@@ -143,13 +143,21 @@
 }
 
 .player-card {
-  border-color: #00e5ff33;
-  box-shadow: 0 0 12px #00e5ff22;
+  border-color: #00e5ff44;
+  box-shadow: 0 0 14px #00e5ff28;
 }
 
-.changed-card {
-  border-color: #00e5ff66;
-  box-shadow: 0 0 16px #00e5ff33;
+/* Amber glow: new or changed this era */
+.amber-card {
+  border-color: #ffab4066;
+  box-shadow: 0 0 16px #ffab4033;
+}
+
+/* Red glow: extinct species */
+.extinct-card {
+  border-color: #ff444466;
+  box-shadow: 0 0 16px #ff444428;
+  opacity: 0.75;
 }
 
 .badge {
@@ -169,10 +177,16 @@
   color: #0a0e1a;
 }
 
-.badge-changed {
-  background: #00e5ff33;
-  color: #00e5ff;
-  border: 1px solid #00e5ff66;
+.badge-amber {
+  background: #ffab4022;
+  color: #ffab40;
+  border: 1px solid #ffab4066;
+}
+
+.badge-extinct {
+  background: #ff444422;
+  color: #ff4444;
+  border: 1px solid #ff444466;
 }
 
 .card-image {
@@ -250,12 +264,21 @@
   min-width: 180px;
 }
 
-.feature-card .card-body {
-  padding: 10px 12px;
+.feature-card-image {
+  background: linear-gradient(135deg, #101a10, #1a2a1a);
 }
 
 .feature-card .card-title {
   font-size: 13px;
+}
+
+/* Extinct trait pills */
+.trait-pill-extinct {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: #2a1010;
+  color: #804040;
 }
 
 /* ---- Section Title ---- */

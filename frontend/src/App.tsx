@@ -17,6 +17,9 @@ function App() {
 
   const currentEra = gameState.eras[viewEraIndex]
   const previousEra = viewEraIndex > 0 ? gameState.eras[viewEraIndex - 1] : undefined
+  const isReadOnly = viewEraIndex !== gameState.currentEraIndex
+  const nextEra = viewEraIndex + 1 < gameState.eras.length ? gameState.eras[viewEraIndex + 1] : undefined
+  const nextEraPlayerSpecies = nextEra?.species.find(s => s.id === nextEra.playerSpeciesId)
 
   function handleAdvanceEra() {
     alert('Era advancement would trigger AI generation here!')
@@ -35,8 +38,8 @@ function App() {
       <main className="main-content" onClick={() => showEraDropdown && setShowEraDropdown(false)}>
         {activeTab === 'planet' && <PlanetView gameState={gameState} />}
         {activeTab === 'ecosystem' && <EcosystemView era={currentEra} previousEra={previousEra} />}
-        {activeTab === 'challenges' && <ChallengeView challenges={currentEra.challenges} onAllComplete={() => setActiveTab('evolve')} />}
-        {activeTab === 'evolve' && <EvolveView era={currentEra} onAdvanceEra={handleAdvanceEra} />}
+        {activeTab === 'challenges' && <ChallengeView challenges={currentEra.challenges} onAllComplete={() => setActiveTab('evolve')} isReadOnly={isReadOnly} />}
+        {activeTab === 'evolve' && <EvolveView era={currentEra} onAdvanceEra={handleAdvanceEra} isReadOnly={isReadOnly} nextEraPlayerSpecies={nextEraPlayerSpecies} />}
       </main>
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
