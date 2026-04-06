@@ -68,32 +68,54 @@ Only triggered when player types a custom response instead of picking a suggesti
 
 ## Views (Mobile-First)
 
-### 1. Era Overview
-- Scrollable horizontal cards (species + features)
-- Player species pinned/prominent
-- Cards with glowing border if changed this era
-- Tap card to see full description + diff from last era
-- Era name + number header
+### Top Bar (fixed)
+- Shows era number + name (e.g. "Era 1 · The Primordial Pools")
+- Doubles as progress bar during era transition (animated fill)
+- Tappable: opens dropdown to pick past eras (time travel, read-only)
 
-### 2. Challenge Queue
-- Sequential challenges (less decision paralysis than pick-any)
-- Each: situation text + 3-4 action buttons + freeform text input
-- Tap action → reveal pre-generated outcome
-- Freeform → send to AI → show generated outcome
-- Progress through ~3-5 challenges per era
+### Bottom Nav (fixed, 4 icon tabs)
+1. **🪐 Planet** - save game / new game selection
+2. **🌿 Ecosystem** - era overview with species & feature cards
+3. **⚔️ Challenges** - challenge queue
+4. **🧬 Evolve** - player species mutation + era advance button
 
-### 3. Evolution View
-- Current species card (full detail)
-- Text input: "What do you want to change?"
-- Quick suggestion chips
-- Preview: shows mutated species card + reasoning + variability score
-- Accept / try again / edit directly
-- History of candidates (undo/redo within current era transition)
+### 1. Planet View (dummy for MVP)
+- Planet name, era count, species count, basic stats
+- "New Planet" button (placeholder)
+- Future: disc album of save games, share button for social play
 
-### Navigation
-- Bottom tabs or swipe between the three views
-- "Advance Era" button visible when challenges are done and mutation is chosen
-- Past eras viewable in read-only mode (time travel)
+### 2. Ecosystem View
+- Horizontal scrollable row of species cards
+- Each card: image placeholder, name, trait pills, 2-line description
+- Player species card: cyan glow border + "YOUR SPECIES" badge
+- Below species: smaller row of feature cards (geological/ecological)
+- Cards changed this era: glowing border + "NEW" / "EVOLVED" badge
+- Tap to expand card with full description + diff from previous era
+
+### 3. Challenge View
+- Sequential challenges (one at a time, or vertical scroll)
+- Each: situation description + 3-4 action buttons
+- Tap action → reveal pre-generated outcome, highlight chosen action
+- Freeform text input + submit button always available
+- After all challenges: summary + "Ready to evolve →" prompt
+
+### 4. Evolution View
+- Large current player species card
+- "How should your species adapt?" text input
+- Quick suggestion chips (based on current pressures)
+- "Preview Mutation" → shows mutated species card + reasoning + variability score
+- "Accept Mutation" / "Try Again" buttons
+- **"Advance to Next Era →"** button at bottom (enabled after accepting mutation)
+- Accepting mutation + advancing era are the same flow: lock in successor, then progress
+
+### Color Scheme
+- Background: dark navy (#0a0e1a)
+- Cards: (#141b2d) with subtle border (#1e2a45)
+- Accent: bioluminescent cyan (#00e5ff) for highlights, player species
+- Warning: warm amber (#ffab40) for threats
+- Text: light (#e0e6f0), muted (#8892a8) for secondary
+- Changed cards: cyan glow effect
+- Future: color scheme evolves per era / matches planet
 
 ## Architecture
 
